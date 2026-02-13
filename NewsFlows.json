@@ -4,7 +4,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE bot_users\nSET status = 'rejected'\nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}';",
+        "query": "UPDATE bot_users\nSET status = 'rejected'\nWHERE session_id = '{{ $('When Executed by Another Workflow').first().json.session_id }}';",
         "options": {}
       },
       "type": "n8n-nodes-base.postgres",
@@ -70,7 +70,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT * \nFROM n8n_chat_histories \nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}'\nORDER BY id DESC \nLIMIT 10;",
+        "query": "SELECT * \nFROM n8n_chat_histories \nWHERE session_id = '{{ $('When Executed by Another Workflow').first().json.session_id }}'\nORDER BY id DESC \nLIMIT 10;",
         "options": {}
       },
       "type": "n8n-nodes-base.postgres",
@@ -288,7 +288,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE bot_users\nSET status = 'prospecting'\nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}';",
+        "query": "UPDATE bot_users\nSET status = 'prospecting'\nWHERE session_id = '{{ $('When Executed by Another Workflow').first().json.session_id }}';",
         "options": {}
       },
       "type": "n8n-nodes-base.postgres",
@@ -308,7 +308,7 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "chatId": "={{ $('When Executed by Another Workflow').item.json.session_id }}",
         "text": "={{ $('AI Cleaner - Recepcionista').item.json.respuesta }}",
         "additionalFields": {
           "appendAttribution": false
@@ -332,7 +332,7 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "chatId": "={{ $('When Executed by Another Workflow').item.json.session_id }}",
         "text": "={{ $('AI Cleaner - Recepcionista').item.json.respuesta }}",
         "additionalFields": {
           "appendAttribution": false
@@ -414,7 +414,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT * FROM n8n_chat_histories \nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}'\nORDER BY id ASC;",
+        "query": "SELECT * FROM n8n_chat_histories \nWHERE session_id = '{{ $('When Executed by Another Workflow').first().json.session_id }}'\nORDER BY id ASC;",
         "options": {}
       },
       "type": "n8n-nodes-base.postgresTool",
