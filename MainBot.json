@@ -194,7 +194,7 @@
 		{
 			"parameters": {
 				"promptType": "define",
-				"text": "={{ $('Telegram Trigger').first().json.message.text }}",
+				"text": "={{ $('Call \\'Processing Incoming Message 2.0\\'').item.json.message }}",
 				"options": {
 					"systemMessage": "=Eres un experto inmobiliario de Villanueva García.\n\nAtiendes a: {{ $('Switch: Actual status').first().json.nombre }}\n\n🚨 PROTOCOLO DE TOLERANCIA CERO (PRIORIDAD ABSOLUTA) 🚨\n\n1. Si detectas: Groserías, insultos, acoso o agresividad.\n\n   - JSON: { \"respuesta\": \"En Villanueva García exigimos respeto. Has sido bloqueado.\", \"accion\": \"bloquear\" }\n\n   - TU ACCIÓN: \"bloquear\".\n\nOBJETIVO: Encontrar la propiedad ideal y perfilar.\n\nHERRAMIENTAS:\n\nUsa \"consultar_inmuebles\" para buscar.\n\nREGLA MAESTRA DE IDENTIFICADORES (PRIORIDAD):\n\n**CRÍTICO:** SIEMPRE que se use la herramienta, busca coincidencias en los campos ID, SLUG, TÍTULO, COLONIA y **ETIQUETAS (TAGS)**.\n\nSi el usuario menciona una propiedad o envía un identificador (ID, título, ubicación o URL):\n\n1. **Si envía una URL (Villanueva García, Inmuebles24, Vivanuncios):** EXTRAE el SLUG (si es tu web) o el ID NUMÉRICO (si es un portal externo) para la búsqueda.\n\n2. **Si envía una ubicación/colonia/título (ej: \"Doctores\", \"Depa para Pareja\"):** Ejecuta \"consultar_inmuebles\" con ese texto.\n\nREGLAS DE INTERACCIÓN:\n\n1. Nunca uses frases como \"Gracias por avisar\", \"Entendido\", \"Claro\" o similares al inicio de tu respuesta. Ve directamente al grano.\n\n2. Nunca ofrezcas buscar un nuevo inmueble si no está disponible o si no cumple con los requisitos. Únicamente informa que el inmueble no está disponible o que no cumple el perfil y desea éxito en su búsqueda.\n\n3. Si el usuario contesta de forma genérica (ej: \"Es para mí\" o \"Hola\") después de la Recepcionista, responde inmediatamente y ÚNICAMENTE con la frase de sondeo: \"¡Excelente! Platícame, ¿qué inmueble o ubicación te interesó para comenzar la búsqueda?\".\n\n4. PROHIBIDO preguntar por zonas geográficas amplias (delegaciones, alcaldías o colonias) si no se está ejecutando la herramienta 'consultar_inmuebles'. SOLO presenta propiedades o realiza preguntas de perfilado.\n\n5. **MANEJO DE BÚSQUEDA SIN ÉXITO (No disponible o no encontrado):**\n\n   - **PROHIBIDO** mencionar o listar propiedades no disponibles o con estatus 'Reservado' o 'Rentado' en la respuesta, BAJO NINGUNA CIRCUNSTANCIA.\n\n   - **Si la herramienta \"consultar_inmuebles\" no devuelve NINGÚN resultado con estatus 'Disponible':**\n\n     - **JSON:** { \"respuesta\": \"Alfonso, parece que no encuentro el inmueble de tu interés. Por favor, indícame el título completo del anuncio, la colonia exacta o pega el enlace de tu portal (Villanueva García, Inmuebles24 o Vivanuncios).\", \"accion\": \"responder\" }\n\n6. Si la búsqueda es exitosa y encuentras algo DISPONIBLE, preséntalo.\n\n7. **SI EL USUARIO MUESTRA INTERÉS EN LA PROPIEDAD DISPONIBLE O AL PRESENTARLA:**\n   - **PRESENTACIÓN DEL INMUEBLE (Si aplica):**\n     - Usa la plantilla: \"¡Perfecto! Te comento que tenemos el siguiente inmueble disponible: 🏠✨\"\n     - **CRÍTICO:** DEBES EXTRAER los siguientes datos del resultado de la herramienta RAG. **NO USES N/A NI \"POR CONFIRMAR\".** Si un dato es crucial, como la Renta, y no lo ves, haz la mejor inferencia del contexto RAG disponible.\n     - La descripción principal debe estar en formato de lista CLARA y atractiva, **usando la siguiente estructura y emojis de forma obligatoria:**\n       - 📍 Ubicación: [Colonia, Alcaldía].\n       - 🛋️ Características: [Número] recámaras, [Número] baño, [Número] estacionamiento, [m2] m2.\n       - 💵 Renta: [Costo de Renta].\n       - 🛡️ Póliza Jurídica: [Costo de Póliza] anual.\n     - **Requisitos:** LISTA los requisitos principales (ingresos mínimos 💳, meses de depósito 💵, restricciones de mascotas 🐶/niños 👶) uno por uno. **Añade emojis relevantes y distintos a cada requisito listado**. **NO uses frases genéricas**.\n   - **CIERRE (EVALUACIÓN DE PERFIL):**\n     - **PROHIBIDO** ofrecer \"agendar visita\".\n     - **Mensaje Único de Cierre:** Debes responder ÚNICAMENTE: \"Debo realizarte una breve Evaluación de Perfil para confirmar que cumples con los requisitos. ¿Estás de acuerdo en iniciar tu evaluación de perfil? 🤝\"\n   - **Acción:** La acción debe ser \"questionaire\".\n\nFILTRO DE DISPONIBILIDAD:\n\n- Si Estatus es \"Reservado\" o \"Rentado\": Manda un mensaje amigable informando que el inmueble (titulo) no está disponible, nunca des el ID del inmueble ni ofrezcas buscar un nuevo inmueble, agradece su interés y deseale éxito en su busqueda, usa emojis para hacer amigable el mensaje.\n\n- Tu JSON debe incluir: { \"accion\": \"rechazar\", \"respuesta\": \"Manda un mensaje amigable informando que el inmueble (titulo) no está disponible, [...] y deseale éxito en su busqueda, usa emojis.\" }\n\nFORMATO JSON OBLIGATORIO:\n\n{\n\n  \"respuesta\": \"Texto para el usuario\",\n\n  \"accion\": \"responder\" (o \"bloquear\" o \"rechazar\" o \"questionaire\"),\n  \n \n \"property_id\": [SOLO INCLUIR SI accion ES \"questionaire\"] \n\n  // CRÍTICO: Cuando la acción sea \"questionaire\", el \"property_id\" DEBE ser el ID que se encuentra dentro de la Metadata del RAG (ej: \"19\" o \"18\"), NO el ID del documento RAG (ej: 359dd6f1-...), CRÍTICO Debe ser un valor SIMPLE (un STRING), NO un array, EJEMPLO CORRECTO: \"property_id\": \"19\"\n\n}\n"
 				}
@@ -210,7 +210,7 @@
 		},
 		{
 			"parameters": {
-				"chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+				"chatId": "={{ $('Call \\'Processing Incoming Message 2.0\\'').item.json.session_id }}",
 				"text": "={{ $('AI Cleaner - Recepcionista').item.json.respuesta }}",
 				"additionalFields": {
 					"appendAttribution": false
@@ -354,7 +354,7 @@
 		{
 			"parameters": {
 				"operation": "executeQuery",
-				"query": "UPDATE bot_users SET bot_status = 'free' WHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}';",
+				"query": "UPDATE bot_users SET bot_status = 'free' WHERE session_id = '{{ $('Call \\'Processing Incoming Message 2.0\\'').item.json.session_id }}';",
 				"options": {}
 			},
 			"type": "n8n-nodes-base.postgres",
@@ -371,7 +371,7 @@
 		},
 		{
 			"parameters": {
-				"chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+				"chatId": "={{ $('Call \\'Processing Incoming Message 2.0\\'').item.json.session_id }}",
 				"text": "={{ $json.respuesta }}",
 				"additionalFields": {
 					"appendAttribution": false
@@ -393,7 +393,7 @@
 		{
 			"parameters": {
 				"operation": "executeQuery",
-				"query": "UPDATE bot_users\nSET status = 'rejected'\nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}'\nRETURNING *;",
+				"query": "UPDATE bot_users\nSET status = 'rejected'\nWHERE session_id = '{{ $('Call \\'Processing Incoming Message 2.0\\'').item.json.session_id }}'\nRETURNING *;",
 				"options": {}
 			},
 			"type": "n8n-nodes-base.postgres",
@@ -461,7 +461,7 @@
 		{
 			"parameters": {
 				"operation": "executeQuery",
-				"query": "SELECT * FROM n8n_chat_histories \nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}'\nORDER BY id ASC;",
+				"query": "SELECT * FROM n8n_chat_histories \nWHERE session_id = '{{ $('Call \\'Processing Incoming Message 2.0\\'').item.json.session_id }}'\nORDER BY id ASC;",
 				"options": {}
 			},
 			"type": "n8n-nodes-base.postgresTool",
@@ -479,7 +479,7 @@
 		{
 			"parameters": {
 				"operation": "executeQuery",
-				"query": "UPDATE bot_users SET bot_status = 'free' WHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}';",
+				"query": "UPDATE bot_users SET bot_status = 'free' WHERE session_id = '{{ $('Call \\'Processing Incoming Message 2.0\\'').item.json.session_id }}';",
 				"options": {}
 			},
 			"type": "n8n-nodes-base.postgres",
@@ -526,7 +526,7 @@
 		{
 			"parameters": {
 				"operation": "executeQuery",
-				"query": "UPDATE bot_users\nSET rejected_count = rejected_count + 1,\n    bot_status = 'processing'\nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}'\nRETURNING *;",
+				"query": "UPDATE bot_users\nSET rejected_count = rejected_count + 1,\n    bot_status = 'processing'\nWHERE session_id = '{{ $('Call \\'Processing Incoming Message 2.0\\'').item.json.session_id }}'\nRETURNING *;",
 				"options": {}
 			},
 			"type": "n8n-nodes-base.postgres",
@@ -607,7 +607,7 @@
 		{
 			"parameters": {
 				"operation": "executeQuery",
-				"query": "UPDATE bot_users\nSET status = 'blocked'\nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}'\nRETURNING api_contact_id;",
+				"query": "UPDATE bot_users\nSET status = 'blocked'\nWHERE session_id = '{{ $('Call \\'Processing Incoming Message 2.0\\'').item.json.session_id }}'\nRETURNING api_contact_id;",
 				"options": {}
 			},
 			"type": "n8n-nodes-base.postgres",
@@ -761,7 +761,7 @@
 		},
 		{
 			"parameters": {
-				"chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+				"chatId": "={{ $('Call \\'Processing Incoming Message 2.0\\'').item.json.session_id }}",
 				"text": "={{ $('AI Cleaner - Buscador').item.json.respuesta }}",
 				"additionalFields": {
 					"appendAttribution": false
@@ -783,7 +783,7 @@
 		{
 			"parameters": {
 				"operation": "executeQuery",
-				"query": "UPDATE bot_users\nSET \n  status = 'questionaire',\n  questionnaire_status = 'pending',\n  property_id = '{{ $('AI Cleaner - Buscador').first().json.property_id }}'\nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}';",
+				"query": "UPDATE bot_users\nSET \n  status = 'questionaire',\n  questionnaire_status = 'pending',\n  property_id = '{{ $('AI Cleaner - Buscador').first().json.property_id }}'\nWHERE session_id = '{{ $('Call \\'Processing Incoming Message 2.0\\'').item.json.session_id }}';",
 				"options": {}
 			},
 			"type": "n8n-nodes-base.postgres",
@@ -1103,7 +1103,7 @@
 		{
 			"parameters": {
 				"operation": "executeQuery",
-				"query": "UPDATE bot_users \nSET \n  bot_status = 'free', \n  questionnaire_status = 'rejected'\nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}';",
+				"query": "UPDATE bot_users \nSET \n  bot_status = 'free', \n  questionnaire_status = 'rejected'\nWHERE session_id = '{{ $('Call \\'Processing Incoming Message 2.0\\'').item.json.session_id }}';",
 				"options": {}
 			},
 			"type": "n8n-nodes-base.postgres",
@@ -1120,7 +1120,7 @@
 		},
 		{
 			"parameters": {
-				"chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+				"chatId": "={{ $('Call \\'Processing Incoming Message 2.0\\'').item.json.session_id }}",
 				"text": "={{ $('Set: Despedida').item.json.respuesta }}",
 				"additionalFields": {
 					"appendAttribution": false
@@ -1141,7 +1141,7 @@
 		},
 		{
 			"parameters": {
-				"chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+				"chatId": "={{ $('Call \\'Processing Incoming Message 2.0\\'').item.json.session_id }}",
 				"text": "=Hola, noté que anteriormente preferiste no realizar la Evaluación de Perfil.\n\n¿Te gustaría cambiar de opinión y realizarla ahora mismo para avanzar con tu perfil? 🤝",
 				"additionalFields": {
 					"appendAttribution": false
@@ -1163,7 +1163,7 @@
 		{
 			"parameters": {
 				"operation": "executeQuery",
-				"query": "UPDATE bot_users \nSET \n  questionnaire_status = 'accepted',\n  bot_status = 'free'\nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}'\nRETURNING *;",
+				"query": "UPDATE bot_users \nSET \n  questionnaire_status = 'accepted',\n  bot_status = 'free'\nWHERE session_id = '{{ $('Call \\'Processing Incoming Message 2.0\\'').item.json.session_id }}'\nRETURNING *;",
 				"options": {}
 			},
 			"type": "n8n-nodes-base.postgres",
@@ -1181,7 +1181,7 @@
 		{
 			"parameters": {
 				"operation": "executeQuery",
-				"query": "UPDATE bot_users \nSET questionnaire_status = 'accepted' \nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}'\nRETURNING *;",
+				"query": "UPDATE bot_users \nSET questionnaire_status = 'accepted' \nWHERE session_id = '{{ $('Call \\'Processing Incoming Message 2.0\\'').item.json.session_id }}'\nRETURNING *;",
 				"options": {}
 			},
 			"type": "n8n-nodes-base.postgres",
@@ -1261,7 +1261,7 @@
 		{
 			"parameters": {
 				"promptType": "define",
-				"text": "={{ $('Telegram Trigger').first().json.message.text }}",
+				"text": "={{ $('Call \\'Processing Incoming Message 2.0\\'').item.json.message }}",
 				"options": {
 					"systemMessage": "=Eres el Perfilador Inmobiliario Inteligente de Villanueva García.\nEstás entrevistando a un cliente interesado en la propiedad con ID: {{ $json.property_id }}.\n\nTU OBJETIVO:\nDeterminar si el cliente es APTO para esta propiedad específica, basándote en los requisitos técnicos del inmueble.\n\nINSTRUCCIONES DE OPERACIÓN:\n\n1. **ANÁLISIS DE LA PROPIEDAD (Paso Cero - CRÍTICO):**\n   - Tu PRIMERA acción debe ser usar la herramienta \"consultar_inmuebles1\" para buscar: \"Ficha Técnica ID {{ $json.property_id }}\".\n   - De esa ficha extrae mentalmente: Precio, Mantenimiento, Mascotas (Si/No), Niños (Si/No), Tipo de Póliza, Uso (Habitacional/Comercial).\n\n2. **ENTREVISTA DINÁMICA (No seas un robot):**\n   - NO hagas todas las preguntas de golpe. Haz UNA a la vez.\n   - Basa tus preguntas en lo que encontraste en el RAG:\n     - Si la ficha dice \"No Mascotas\" -> Pregunta prioritariamente: \"¿Cuentas con alguna mascota?\".\n     - Si dice \"Pet Friendly\" -> Pregunta \"¿Qué mascota tienes y de qué tamaño?\".\n     - Si es Habitacional -> Pregunta número de habitantes y edades.\n     - Si pide Póliza Jurídica -> Pregunta si cuenta con Fiador/Aval o Obligado Solidario.\n     - Económico -> Pregunta si sus ingresos mensuales comprobables cubren 3 veces el valor de la renta (regla estándar).\n\n3. **REGLAS DE RECHAZO (Hard Filters):**\n   - Si el usuario viola una restricción explícita de la ficha (ej: Tiene 2 gatos y la ficha dice \"No Mascotas\"), debes detener la entrevista.\n   - Acción: \"rechazar_cuestionario\"\n   - Respuesta: Explica amablemente que la propiedad no admite esa característica específica y cierra la conversación.\n\n4. **FINALIZACIÓN (Aprobado):**\n   - Si has cubierto los puntos críticos (Dinero, Ocupantes, Mascotas, Garantía) y todo cuadra.\n   - Acción: \"transferir_humano\"\n   - Respuesta: \"¡Excelente! Cubres el perfil preliminar para esta propiedad. Te transferiré con un asesor para agendar tu visita.\"\n\nFORMATO JSON OBLIGATORIO:\n{\n  \"respuesta\": \"Texto para el usuario (tu siguiente pregunta o conclusión)\",\n  \"accion\": \"responder\" | \"transferir_humano\" | \"rechazar_cuestionario\"\n}"
 				}
