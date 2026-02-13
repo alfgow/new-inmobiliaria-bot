@@ -1,0 +1,722 @@
+{
+  "name": "Processing Incoming Message 2.0",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "wa_id"
+            },
+            {
+              "name": "name"
+            },
+            {
+              "name": "message"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        -144
+      ],
+      "id": "8c859044-b805-4a18-8a6b-cbba82d6892c",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM bot_users WHERE session_id = '{{ $json.wa_id }}'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        560,
+        -144
+      ],
+      "id": "2392c50b-0f63-40d8-886b-83cef340271f",
+      "name": "GET: Contact Info",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "qyR2OAIR7tUEVcQf",
+          "name": "Postgres-neon"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://vg.g210512.com/api/v1/contactos?telefono={{ $('When Executed by Another Workflow').item.json.wa_id.slice(3) }}\n",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        336,
+        128
+      ],
+      "id": "38d530a8-7e1f-4c37-80e9-8d38dc847a4a",
+      "name": "Get API Contact",
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "rzmCtJN8Vtwv6AO3",
+          "name": "API Key Inmuebles"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://vg.g210512.com/api/v1/contactos",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "nombre",
+              "value": "=🤖2.0 - {{ $('When Executed by Another Workflow').item.json.name }}"
+            },
+            {
+              "name": "telefono",
+              "value": "={{ $('When Executed by Another Workflow').item.json.wa_id.slice(3) }}"
+            },
+            {
+              "name": "estado",
+              "value": "nuevo"
+            },
+            {
+              "name": "fuente",
+              "value": "🤖📧 - BOT 2.0"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        352,
+        368
+      ],
+      "id": "70765dce-87f9-4c1a-9f2d-a3dcee5b53d0",
+      "name": "Create API Contact",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "rzmCtJN8Vtwv6AO3",
+          "name": "API Key Inmuebles"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a195023c-c679-46f3-ac19-5a1f5c7a7069",
+              "leftValue": "={{ $('GET: Contact Info').item.json.session_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1264,
+        -128
+      ],
+      "id": "01e4f9d4-3361-484f-9ae1-b1b9740018d8",
+      "name": "If exists in Postgress?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b670288f-0ee1-4fb7-b7c3-d1f48534e072",
+              "leftValue": "={{ $json.data }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        128
+      ],
+      "id": "5989c6d1-6c56-41c9-a9a2-a505ddefeb5f",
+      "name": "If: Exist in API?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO bot_users (session_id, status, api_contact_id, nombre, bot_status)\nVALUES (\n  '{{ $('When Executed by Another Workflow').item.json.wa_id }}',\n  'new',\n  {{ $json.data[0].id }},\n  '{{ $json.data[0].nombre }}',\n  'processing'\n)\nRETURNING *;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        816,
+        112
+      ],
+      "id": "abe408ab-8739-4d5a-92c7-7ec5162254f5",
+      "name": "Create Postgress Contact",
+      "alwaysOutputData": false,
+      "credentials": {
+        "postgres": {
+          "id": "qyR2OAIR7tUEVcQf",
+          "name": "Postgres-neon"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO bot_users (session_id, status, api_contact_id, nombre, telefono_real)\nVALUES ('{{ $('When Executed by Another Workflow').item.json.wa_id }}', 'new', {{ $json.data.id }}, '{{ $json.data.nombre }}', {{ $json.data.telefono }})\n  RETURNING *;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        592,
+        368
+      ],
+      "id": "8dec871e-4595-4273-994d-e4d675ed715d",
+      "name": "Insert After API Creation",
+      "credentials": {
+        "postgres": {
+          "id": "qyR2OAIR7tUEVcQf",
+          "name": "Postgres-neon"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE bot_users SET bot_status = 'processing' WHERE session_id = '{{ $('When Executed by Another Workflow').item.json.wa_id }}' RETURNING *;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1040,
+        -128
+      ],
+      "id": "7960b9e6-4698-4a4d-8bc3-02098b338dc2",
+      "name": "SET: Bot processing",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "qyR2OAIR7tUEVcQf",
+          "name": "Postgres-neon"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6a10b01d-4d17-4f12-a8e8-6b37178710d0",
+              "leftValue": "={{ $json.bot_status }}",
+              "rightValue": "processing",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "9b7e0513-8b18-4558-a68c-2119da4416c2",
+              "leftValue": "={{ $json.bot_status }}",
+              "rightValue": "processing",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        768,
+        -144
+      ],
+      "id": "7c6ccb01-119f-4d74-b757-eade703eee45",
+      "name": "If: Bot is processing",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2b952523-b374-472e-8f77-38bb70e929cd",
+              "name": "session_id",
+              "value": "={{ $json.session_id }}",
+              "type": "string"
+            },
+            {
+              "id": "356052e2-1faa-48f0-9d07-6d590425be06",
+              "name": "status",
+              "value": "={{ $json.status }}",
+              "type": "string"
+            },
+            {
+              "id": "99ff7a76-d3bd-4338-8e53-6e3068c3d239",
+              "name": "api_contact_id",
+              "value": "={{ $json.api_contact_id }}",
+              "type": "number"
+            },
+            {
+              "id": "069b5076-0451-40c1-9551-3127ddb6ffce",
+              "name": "nombre",
+              "value": "={{ $json.nombre }}",
+              "type": "string"
+            },
+            {
+              "id": "8a4aa782-83ff-44b8-9298-eba6e703b000",
+              "name": "telefono_real",
+              "value": "={{ $json.telefono_real }}",
+              "type": "string"
+            },
+            {
+              "id": "1e01c49d-158c-4b3f-89b5-bbc423c7fed2",
+              "name": "bot_status",
+              "value": "={{ $json.bot_status }}",
+              "type": "string"
+            },
+            {
+              "id": "429fccd2-039c-4445-841e-6bef8c4bccda",
+              "name": "rejected_count",
+              "value": "={{ $json.rejected_count }}",
+              "type": "number"
+            },
+            {
+              "id": "fc94b3de-cc18-43af-95d5-34e3d68b588f",
+              "name": "questionnaire_status",
+              "value": "={{ $json.questionnaire_status }}",
+              "type": "string"
+            },
+            {
+              "id": "f036413c-68d0-4ee8-b39a-900f75ca7db6",
+              "name": "property_id",
+              "value": "={{ $json.property_id }}",
+              "type": "string"
+            },
+            {
+              "id": "a124a2e3-63e6-4854-840c-bf285760e4d9",
+              "name": "count_outcontext",
+              "value": "={{ $json.count_outcontext }}",
+              "type": "number"
+            },
+            {
+              "id": "9b50adca-68ba-4a19-90f4-42f60e7329b6",
+              "name": "message",
+              "value": "={{ $('When Executed by Another Workflow').item.json.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        816,
+        368
+      ],
+      "id": "aacdf8d9-ffa9-4044-a280-dfb97038093d",
+      "name": "Set: Contact Data Info"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "=892218773979929",
+        "recipientPhoneNumber": "={{ $json.session_id }}",
+        "textBody": "Un segundo, sigo trabajando en tu mensaje anterior",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        1040,
+        -336
+      ],
+      "id": "2c211154-1a6a-4196-9598-32fb051fd498",
+      "name": "Send message",
+      "webhookId": "6ea5b0bc-03d2-4311-9ad5-16d9eca85914",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "s0OzaeWmw3lzqhNG",
+          "name": "WhatsApp - testing v2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2b952523-b374-472e-8f77-38bb70e929cd",
+              "name": "session_id",
+              "value": "={{ $json.session_id }}",
+              "type": "string"
+            },
+            {
+              "id": "356052e2-1faa-48f0-9d07-6d590425be06",
+              "name": "status",
+              "value": "={{ $json.status }}",
+              "type": "string"
+            },
+            {
+              "id": "99ff7a76-d3bd-4338-8e53-6e3068c3d239",
+              "name": "api_contact_id",
+              "value": "={{ $json.api_contact_id }}",
+              "type": "number"
+            },
+            {
+              "id": "069b5076-0451-40c1-9551-3127ddb6ffce",
+              "name": "nombre",
+              "value": "={{ $json.nombre }}",
+              "type": "string"
+            },
+            {
+              "id": "8a4aa782-83ff-44b8-9298-eba6e703b000",
+              "name": "telefono_real",
+              "value": "={{ $json.telefono_real }}",
+              "type": "string"
+            },
+            {
+              "id": "1e01c49d-158c-4b3f-89b5-bbc423c7fed2",
+              "name": "bot_status",
+              "value": "={{ $json.bot_status }}",
+              "type": "string"
+            },
+            {
+              "id": "429fccd2-039c-4445-841e-6bef8c4bccda",
+              "name": "rejected_count",
+              "value": "={{ $json.rejected_count }}",
+              "type": "number"
+            },
+            {
+              "id": "fc94b3de-cc18-43af-95d5-34e3d68b588f",
+              "name": "questionnaire_status",
+              "value": "={{ $json.questionnaire_status }}",
+              "type": "string"
+            },
+            {
+              "id": "f036413c-68d0-4ee8-b39a-900f75ca7db6",
+              "name": "property_id",
+              "value": "={{ $json.property_id }}",
+              "type": "string"
+            },
+            {
+              "id": "a124a2e3-63e6-4854-840c-bf285760e4d9",
+              "name": "count_outcontext",
+              "value": "={{ $json.count_outcontext }}",
+              "type": "number"
+            },
+            {
+              "id": "9b50adca-68ba-4a19-90f4-42f60e7329b6",
+              "name": "message",
+              "value": "={{ $('When Executed by Another Workflow').item.json.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1488,
+        -144
+      ],
+      "id": "de1bf30f-16b2-4084-be78-12a60ccdb661",
+      "name": "Set: Contact Data Info1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2b952523-b374-472e-8f77-38bb70e929cd",
+              "name": "session_id",
+              "value": "={{ $json.session_id }}",
+              "type": "string"
+            },
+            {
+              "id": "356052e2-1faa-48f0-9d07-6d590425be06",
+              "name": "status",
+              "value": "={{ $json.status }}",
+              "type": "string"
+            },
+            {
+              "id": "99ff7a76-d3bd-4338-8e53-6e3068c3d239",
+              "name": "api_contact_id",
+              "value": "={{ $json.api_contact_id }}",
+              "type": "number"
+            },
+            {
+              "id": "069b5076-0451-40c1-9551-3127ddb6ffce",
+              "name": "nombre",
+              "value": "={{ $json.nombre }}",
+              "type": "string"
+            },
+            {
+              "id": "8a4aa782-83ff-44b8-9298-eba6e703b000",
+              "name": "telefono_real",
+              "value": "={{ $json.telefono_real }}",
+              "type": "string"
+            },
+            {
+              "id": "1e01c49d-158c-4b3f-89b5-bbc423c7fed2",
+              "name": "bot_status",
+              "value": "={{ $json.bot_status }}",
+              "type": "string"
+            },
+            {
+              "id": "429fccd2-039c-4445-841e-6bef8c4bccda",
+              "name": "rejected_count",
+              "value": "={{ $json.rejected_count }}",
+              "type": "number"
+            },
+            {
+              "id": "fc94b3de-cc18-43af-95d5-34e3d68b588f",
+              "name": "questionnaire_status",
+              "value": "={{ $json.questionnaire_status }}",
+              "type": "string"
+            },
+            {
+              "id": "f036413c-68d0-4ee8-b39a-900f75ca7db6",
+              "name": "property_id",
+              "value": "={{ $json.property_id }}",
+              "type": "string"
+            },
+            {
+              "id": "a124a2e3-63e6-4854-840c-bf285760e4d9",
+              "name": "count_outcontext",
+              "value": "={{ $json.count_outcontext }}",
+              "type": "number"
+            },
+            {
+              "id": "9b50adca-68ba-4a19-90f4-42f60e7329b6",
+              "name": "message",
+              "value": "={{ $('When Executed by Another Workflow').item.json.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1008,
+        112
+      ],
+      "id": "b2971721-4c7c-4079-9d81-d6ee9b737607",
+      "name": "Set: Contact Data Info2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "GET: Contact Info": {
+      "main": [
+        [
+          {
+            "node": "If: Bot is processing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get API Contact": {
+      "main": [
+        [
+          {
+            "node": "If: Exist in API?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create API Contact": {
+      "main": [
+        [
+          {
+            "node": "Insert After API Creation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If exists in Postgress?": {
+      "main": [
+        [
+          {
+            "node": "Set: Contact Data Info1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get API Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If: Exist in API?": {
+      "main": [
+        [
+          {
+            "node": "Create Postgress Contact",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create API Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Postgress Contact": {
+      "main": [
+        [
+          {
+            "node": "Set: Contact Data Info2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert After API Creation": {
+      "main": [
+        [
+          {
+            "node": "Set: Contact Data Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SET: Bot processing": {
+      "main": [
+        [
+          {
+            "node": "If exists in Postgress?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If: Bot is processing": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SET: Bot processing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "GET: Contact Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "563fa3ba-088f-4148-babf-eeed71a7ec09",
+  "meta": {
+    "instanceId": "37571b6e3b06c0ce894d50931b94c0b80b70f40d5b859a8ce717ce6c0e3d4b9d"
+  },
+  "id": "Qc11Wg3DiEqaN9GN",
+  "tags": [
+    {
+      "updatedAt": "2026-01-03T05:21:43.395Z",
+      "createdAt": "2026-01-03T05:21:43.395Z",
+      "id": "CGZf0gxA5685L0Mc",
+      "name": "2.0"
+    }
+  ]
+}

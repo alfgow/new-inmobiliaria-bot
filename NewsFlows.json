@@ -1,0 +1,1535 @@
+{
+  "name": "NewsFlows",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE bot_users\nSET status = 'rejected'\nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1280,
+        400
+      ],
+      "id": "5732fb2a-4874-4117-a7d6-2347ad60b722",
+      "name": "Guardar Veto Postgress",
+      "credentials": {
+        "postgres": {
+          "id": "qyR2OAIR7tUEVcQf",
+          "name": "Postgres-neon"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://vg.g210512.com/api/v1/contactos/{{ $('SET: Blocked Status').first().json.data.id }}/comentarios",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "comentario",
+              "value": "={{ $json.reporte_final }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2288,
+        -256
+      ],
+      "id": "9304871b-12cc-4bdd-bda1-cb4d6b23ec1f",
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "rzmCtJN8Vtwv6AO3",
+          "name": "API Key Inmuebles"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Obtenemos los mensajes y los invertimos (orden cronológico)\nconst items = $input.all().reverse();\n\nlet reporte = \"🚨 REPORTE DE BLOQUEO - ÚLTIMAS INTERACCIONES 🚨\\n\\n\";\n\n// 2. Recorremos cada mensaje\nfor (const item of items) {\n  const msg = item.json.message;\n\n  // Identificamos al actor\n  let actor = \"Desconocido\";\n  if (msg.type === 'human') {\n    actor = \"Usuario\";\n  } else if (msg.type === 'ai') {\n    actor = \"Bot\";\n  }\n\n  // Extraemos el texto crudo\n  let texto = msg.content || (msg.data && msg.data.content) || \"Sin texto\";\n\n  // --- LIMPIEZA DE JSON (LA MAGIA NUEVA) ---\n  // Si es el Bot y parece que mandó un JSON, intentamos limpiarlo\n  if (actor === \"Bot\" && texto.includes(\"{\")) {\n    try {\n      const inicio = texto.indexOf('{');\n      const fin = texto.lastIndexOf('}') + 1;\n      \n      if (inicio !== -1 && fin !== -1) {\n        const jsonStr = texto.substring(inicio, fin);\n        const objeto = JSON.parse(jsonStr);\n        \n        // Si tiene el campo \"respuesta\", usamos eso en lugar del JSON feo\n        if (objeto.respuesta) {\n          texto = objeto.respuesta;\n        }\n      }\n    } catch (e) {\n      // Si falla el parseo, dejamos el texto original\n    }\n  }\n  // ----------------------------------------\n\n  // 3. Agregamos la línea limpia al reporte\n  reporte += `🔴 ${actor}: ${texto}\\n`;\n}\n\nreturn {\n  json: {\n    reporte_final: reporte\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        -256
+      ],
+      "id": "0222802f-dd89-4456-992c-db8221d1e277",
+      "name": "Formatear Conversacion"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * \nFROM n8n_chat_histories \nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}'\nORDER BY id DESC \nLIMIT 10;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1888,
+        -256
+      ],
+      "id": "17c470ce-ea8e-42d4-bf7d-14333baaabcf",
+      "name": "Get Story Chat",
+      "credentials": {
+        "postgres": {
+          "id": "qyR2OAIR7tUEVcQf",
+          "name": "Postgres-neon"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE bot_users\nSET status = 'blocked'\nWHERE session_id = '{{ $('Insert After API Creation').item.json.session_id }}'\nRETURNING api_contact_id;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1536,
+        -256
+      ],
+      "id": "e81a00c5-c8ab-4649-afba-9b465f1de49d",
+      "name": "SET: Blocked",
+      "credentials": {
+        "postgres": {
+          "id": "qyR2OAIR7tUEVcQf",
+          "name": "Postgres-neon"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('AI Cleaner - Recepcionista').item.json.accion }}",
+                    "rightValue": "bloquear",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "557be052-61de-4151-9911-abf7f5404b31"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "🚫 Bloquear"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "170af834-dfb6-43a2-880d-3272a3d20933",
+                    "leftValue": "={{ $('AI Cleaner - Recepcionista').item.json.accion }}",
+                    "rightValue": "responder",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "➡️ Responder"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c66d3aa2-4b2c-4b23-8fa0-7c0e0ca075ec",
+                    "leftValue": "={{ $('AI Cleaner - Recepcionista').item.json.accion }}",
+                    "rightValue": "rechazar",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "❌ Rechazar"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "faae84b3-edce-4c6b-929e-ac1422d8784f",
+                    "leftValue": "={{ $('AI Cleaner - Recepcionista').item.json.accion }}",
+                    "rightValue": "transferir",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "🔀 Transferir"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        976,
+        288
+      ],
+      "id": "9f3e821a-b4d7-4825-8e4d-1d0fda02dbe4",
+      "name": "Switch: Block or Continue"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('When Executed by Another Workflow').item.json.session_id }}",
+        "tableName": "=n8n_chat_histories",
+        "contextWindowLength": 30
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        2688,
+        928
+      ],
+      "id": "9d5f75ec-4388-4a5c-a60c-adc4a4658ca7",
+      "name": "Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "qyR2OAIR7tUEVcQf",
+          "name": "Postgres-neon"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE bot_users\nSET\n    nombre = COALESCE(NULLIF('{{ $json.nuevo_nombre }}', ''), nombre),\n    telefono_real = COALESCE(NULLIF('{{ $json.nuevo_telefono }}', ''), telefono_real),\n    rol = COALESCE(NULLIF('{{ $json.nuevo_rol }}', ''), rol),\n\n    -- Estado AI (tracking)\n    last_intencion = COALESCE(NULLIF('{{ $json.intencion }}', ''), last_intencion),\n    last_accion = COALESCE(NULLIF('{{ $json.accion }}', ''), last_accion),\n    last_bot_reply = COALESCE(NULLIF('{{ $json.respuesta }}', ''), last_bot_reply),\n\n    -- Contadores (aplicar delta)\n    veces_pidiendo_nombre = veces_pidiendo_nombre + CASE WHEN {{ $json.memoria_delta?.pide_nombre === true ? 1 : 0 }} = 1 THEN 1 ELSE 0 END,\n    veces_pidiendo_telefono = veces_pidiendo_telefono + CASE WHEN {{ $json.memoria_delta?.pide_telefono === true ? 1 : 0 }} = 1 THEN 1 ELSE 0 END,\n\n    updated_at = NOW()\nWHERE session_id = '{{ $('When Executed by Another Workflow').first().json.session_id }}'\nRETURNING *;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        912,
+        -48
+      ],
+      "id": "e83f1fcd-6c19-4fad-90c1-5d7747974e3b",
+      "name": "Query de Actualización Inteligente",
+      "credentials": {
+        "postgres": {
+          "id": "qyR2OAIR7tUEVcQf",
+          "name": "Postgres-neon"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message }}",
+        "options": {
+          "systemMessage": "=Eres el Asistente de Bienvenida de Villanueva García.\n\nTu función es clasificar la intención del mensaje del usuario y avanzar el onboarding mínimo obligatorio antes de transferir al flujo de inmuebles.\n\nOBJETIVO DE ONBOARDING (OBLIGATORIO)\n\nDebes obtener en este orden:\n\nNombre completo (Nombre + Apellido)\n\nTeléfono (10 dígitos MX)\n\nConfirmar si es cliente o asesor\n\n⚠️ Aunque el usuario pregunte por inmuebles, si faltan datos del onboarding debes pedirlos primero.\n\nHERRAMIENTA OBLIGATORIA\n\nDebes consultar SIEMPRE la tabla Chat Memory para conocer el estado previo del usuario.\n\nMEMORIA (solo lectura para el AI)\n\nEn memoria pueden existir:\n\nveces_pidiendo_nombre (int)\n\nveces_pidiendo_telefono (int)\n\nSi no existen:\n\nAsúmelos como 0 solo para decidir.\n\nNO los escribas como hechos.\n\nSolo propone cambios mediante memoria_delta.\n\nINTENCIONES PERMITIDAS\n\nDebes devolver UNA SOLA:\n\nmisbehavior\n\npersonal_data\n\ngreetings\n\nproperty_inquiry\n\ngeneral_inquiry\n\nREGLAS DE PRIORIDAD (CRÍTICAS)\n\nEvalúa en este orden exacto:\n\nMisbehavior\nSi hay insulto, amenaza, lenguaje ofensivo o agresivo\n→ intencion=\"misbehavior\"\n→ accion=\"bloquear\"\n\nPersonal data (NUEVO)\nSi el mensaje contiene:\n\nun nombre completo válido, o\n\nun teléfono válido,\naunque también incluya saludo o preguntas\n→ intencion=\"personal_data\"\n\nProperty inquiry\nSi el usuario quiere:\n\nver, rentar, comprar, visitar un inmueble\n\nprecio, ubicación, disponibilidad\n\nGreetings\nSi es solo saludo o cortesía:\n\n“hola”, “buenas”, “qué tal”, etc.\n\nGeneral inquiry\nCualquier otro mensaje\n\n⚠️ Nota clave:\nAunque la intención sea property_inquiry o general_inquiry, si faltan datos del onboarding debes pedirlos antes de continuar.\n\nDEFINICIONES ESTRICTAS\nNombre completo válido\n\nAl menos 2 palabras\n\nSolo letras\n\nEjemplo válido: \"Juan Pérez\"\n\n❌ No válido: \"Juan\", \"🤖\", \"JP\"\n\nTeléfono válido\n\nExactamente 10 dígitos\n\nPuede venir con espacios o guiones\n\nDebes normalizarlo a solo dígitos\n\nUsuario asesor\n\nSi menciona:\n\n“asesor”, “agente”, “broker”, “inmobiliaria”, “soy asesor”, etc.\n\nPOLÍTICAS\n\nNunca ofrezcas alternativas de contacto.\n\nNunca inventes datos.\n\nSi no estás seguro, deja el campo vacío.\n\nSi el usuario no entrega el mismo dato tras 3 intentos → accion=\"rechazar\".\n\nFORMATO DE SALIDA (JSON ESTRICTO)\n\n⚠️ ÚNICA SALIDA PERMITIDA. NO TEXTO EXTRA.\n\n{\n  \"respuesta\": \"\",\n  \"accion\": \"responder | transferir | rechazar | bloquear\",\n  \"intencion\": \"greetings | personal_data | property_inquiry | general_inquiry | misbehavior\",\n  \"datos\": {\n    \"nombre\": \"\",\n    \"telefono\": \"\",\n    \"api_id\": {{ $json.api_contact_id }}\n  },\n  \"memoria_delta\": {\n    \"pide_nombre\": false,\n    \"pide_telefono\": false\n  }\n}\n\nDATOS RECIBIDOS (INPUT ACTUAL)\n\nNombre actual: {{ $json.nombre }}\n\nTeléfono actual: {{ $json.session_id.slice(3) }}\n\nMensaje: {{ $json.message }}\n\nAPI ID: {{ $json.api_contact_id }}\n\nLÓGICA DE DECISIÓN\n0) FILTRO DE GROSERÍAS\n\nSi hay falta de respeto:\n\nrespuesta: \"No puedo continuar debido al lenguaje utilizado.\"\n\naccion: \"bloquear\"\n\nintencion: \"misbehavior\"\n\ndatos: vacíos\n\nmemoria_delta: ambos false\n\n1) EVALUAR NOMBRE COMPLETO\n\nSi el nombre actual:\n\nes vacío / null\n\ncontiene emojis\n\nno cumple definición\n\nEntonces:\n\nSi veces_pidiendo_nombre >= 3 →\n\naccion: \"rechazar\"\n\nrespuesta breve y neutral\n\nSi el mensaje contiene nombre completo válido →\n\nguardar en datos.nombre\n\nintencion=\"personal_data\"\n\ncontinuar a teléfono\n\nSi NO contiene nombre →\n\nrespuesta EXACTA:\n\n\"Bienvenido a Inmobiliaria Villanueva García, para atenderte personalmente indícame tu nombre completo por favor (Nombre y Apellido)\"\n\nmemoria_delta.pide_nombre = true\n\n2) EVALUAR TELÉFONO\n\nSi ya hay nombre pero teléfono es vacío o inválido:\n\nSi veces_pidiendo_telefono >= 3 →\n\naccion: \"rechazar\"\n\nSi el mensaje contiene teléfono válido →\n\nnormalizar a 10 dígitos\n\nguardar en datos.telefono\n\nintencion=\"personal_data\"\n\nSi NO contiene teléfono →\n\nrespuesta:\n\n\"Perfecto, ahora compárteme tu número de teléfono a 10 dígitos, por favor.\"\n\nmemoria_delta.pide_telefono = true\n\n3) SI YA HAY NOMBRE Y TELÉFONO\n\nPregunta:\n\n\"¿Buscas para ti o eres asesor?\"\n\nSi indica asesor →\n\naccion: \"rechazar\"\n\nrespuesta: \"Lo siento, este canal es solo para clientes.\"\n\nSi indica cliente / busca para sí →\n\naccion: \"transferir\"\n\nrespuesta: \"Perfecto, ¿qué inmueble te interesa?\"\n\nSi no es claro →\n\naccion: \"responder\"\n\nrepetir la pregunta\n\nRECORDATORIOS FINALES\n\nSiempre JSON válido\n\nNunca texto fuera del JSON\n\nNunca inventar datos\n\npersonal_data tiene prioridad cuando el usuario manda nombre o teléfono"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        2544,
+        720
+      ],
+      "id": "57ff7c81-ffc6-43c2-bf29-21b94a625c46",
+      "name": "AI: Recepcionista"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE bot_users\nSET status = 'prospecting'\nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1264,
+        736
+      ],
+      "id": "ada98233-3004-4ffa-aa36-cd0fb51b20e3",
+      "name": "SET prospecting status",
+      "credentials": {
+        "postgres": {
+          "id": "qyR2OAIR7tUEVcQf",
+          "name": "Postgres-neon"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $('AI Cleaner - Recepcionista').item.json.respuesta }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1504,
+        400
+      ],
+      "id": "2eca8f28-66b8-4ec6-9959-0917f38f7f98",
+      "name": "Reject Chat",
+      "webhookId": "4879cb5d-acdf-480f-ac53-2e7e6b365fe5",
+      "credentials": {
+        "telegramApi": {
+          "id": "miuzXVpC7N3HQebh",
+          "name": "RAG BOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $('AI Cleaner - Recepcionista').item.json.respuesta }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1520,
+        736
+      ],
+      "id": "115ffe72-acb0-4fd2-a17a-3f0f4b1b1733",
+      "name": "Transfer Chat",
+      "webhookId": "4879cb5d-acdf-480f-ac53-2e7e6b365fe5",
+      "credentials": {
+        "telegramApi": {
+          "id": "miuzXVpC7N3HQebh",
+          "name": "RAG BOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-nano",
+          "mode": "list",
+          "cachedResultName": "gpt-5-nano"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2512,
+        992
+      ],
+      "id": "1743f6bf-dc28-4bf1-aeb5-8dbed0639123",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "g8OPzRDvvB6YO7mf",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://vg.g210512.com/api/v1/contactos/{{ $('AI Cleaner - Recepcionista').item.json.api_id }}/comentarios\n",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "comentario",
+              "value": "={{ $json.content.parts[0].text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2048,
+        400
+      ],
+      "id": "b543e5f2-0792-471b-a2b6-78b9734acd1f",
+      "name": "API: Add Comment1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "rzmCtJN8Vtwv6AO3",
+          "name": "API Key Inmuebles"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM n8n_chat_histories \nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}'\nORDER BY id ASC;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        1760,
+        560
+      ],
+      "id": "cccfbfd2-83af-4498-91fc-2680ca3cbd45",
+      "name": "GET: Chat Histories",
+      "credentials": {
+        "postgres": {
+          "id": "qyR2OAIR7tUEVcQf",
+          "name": "Postgres-neon"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://vg.g210512.com/api/v1/contactos/{{ $json.api_contact_id }}/estado",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "estado",
+              "value": "blocked"
+            },
+            {
+              "name": "nombre",
+              "value": "={{ $('Switch: Actual status').first().json.nombre }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1712,
+        -256
+      ],
+      "id": "5bcbc588-da42-4e6d-a9f7-cd1f95a803d4",
+      "name": "SET: Blocked Status",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "rzmCtJN8Vtwv6AO3",
+          "name": "API Key Inmuebles"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://vg.g210512.com/api/v1/contactos/{{ $('AI Cleaner - Recepcionista').item.json.api_id }}/estado",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "estado",
+              "value": "rejected"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2256,
+        400
+      ],
+      "id": "a9d89e77-f5d1-48b4-94f1-6cac91688a40",
+      "name": "SET: Blocked Status1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "rzmCtJN8Vtwv6AO3",
+          "name": "API Key Inmuebles"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://vg.g210512.com/api/v1/contactos/{{ $('AI Cleaner - Recepcionista').item.json.api_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"nombre\": \"{{ $('AI Cleaner - Recepcionista').item.json.nuevo_nombre ? $('AI Cleaner - Recepcionista').item.json.nuevo_nombre + \" - 🤖\" : \"🤖 - Nuevo Contacto\" }}\",\n  \"telefono\": \"{{ $('Query de Actualización Inteligente').item.json.telefono_real }}\",\n  \"estado\": \"nuevo\",\n  \"fuente\": \"🤖 - WhatsApp Bot\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1936,
+        80
+      ],
+      "id": "a4045a35-4b63-4484-849c-25652474b439",
+      "name": "API: Update Contact",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "rzmCtJN8Vtwv6AO3",
+          "name": "API Key Inmuebles"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://vg.g210512.com/api/v1/contactos/{{ $('AI Cleaner - Recepcionista').item.json.api_id }}/estado",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "estado",
+              "value": "={{ \"en_contacto\" }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1744,
+        736
+      ],
+      "id": "0a452e6c-0249-4a05-bf1a-b67e9a1a164f",
+      "name": "SET: Prospecting Status",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "rzmCtJN8Vtwv6AO3",
+          "name": "API Key Inmuebles"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================\n// AI Cleaner - Recepcionista\n// Code node v2 (return array)\n// ============================\n\n// 1) Texto devuelto por el agente (puede traer JSON o texto sucio)\nconst textoIA = $input.item.json.output || \"\";\n\n// 2) Datos base desde el Trigger (siempre disponibles en tu flujo)\nlet trigger = {};\ntry {\n  const arr = $items(\"When Executed by Another Workflow\");\n  trigger = (arr && arr[0] && arr[0].json) ? arr[0].json : {};\n} catch (e) {\n  trigger = {};\n}\n\n// Helpers\nconst limpiarDato = (valor) => {\n  if (valor === undefined || valor === null) return null;\n  if (typeof valor === \"string\") {\n    const v = valor.trim();\n    if (!v) return null;\n    if (v.toUpperCase() === \"PENDIENTE\") return null;\n    return v;\n  }\n  return valor;\n};\n\nconst normalizarTelefono10 = (valor) => {\n  if (!valor) return null;\n  const digits = String(valor).replace(/\\D/g, \"\");\n  // Si viene con +52 o 52 al inicio, recortamos a últimos 10\n  if (digits.length > 10) return digits.slice(-10);\n  if (digits.length === 10) return digits;\n  return null;\n};\n\n// Extraer un JSON embebido dentro de texto\nconst extraerJson = (texto) => {\n  const inicio = texto.indexOf(\"{\");\n  const fin = texto.lastIndexOf(\"}\") + 1;\n  if (inicio === -1 || fin === -1 || fin <= inicio) return null;\n  const jsonLimpio = texto.substring(inicio, fin);\n  return JSON.parse(jsonLimpio);\n};\n\n// 3) Defaults (si el JSON viene sucio o falla el parseo)\nlet resultado = {\n  // salida conversacional\n  respuesta: textoIA,\n  accion: \"responder\",\n  intencion: null,\n\n  // para tu pipeline actual\n  nuevo_nombre: trigger.nombre ?? null,\n  nuevo_telefono: trigger.telefono_real ?? null,\n  nuevo_rol: null,\n  api_id: trigger.api_contact_id ?? null,\n\n  // nuevo: control de memoria (para que un nodo posterior aplique incrementos)\n  memoria_delta: {\n    pide_nombre: false,\n    pide_telefono: false\n  }\n};\n\ntry {\n  const objeto = extraerJson(textoIA);\n\n  if (objeto && typeof objeto === \"object\") {\n    // Campos principales\n    if (typeof objeto.respuesta === \"string\" && objeto.respuesta.trim()) {\n      resultado.respuesta = objeto.respuesta.trim();\n    }\n    if (typeof objeto.accion === \"string\" && objeto.accion.trim()) {\n      resultado.accion = objeto.accion.trim();\n    }\n\n    // intencion (nuevo)\n    if (typeof objeto.intencion === \"string\" && objeto.intencion.trim()) {\n      resultado.intencion = objeto.intencion.trim();\n    }\n\n    // memoria_delta (nuevo)\n    const md = objeto.memoria_delta || {};\n    if (typeof md.pide_nombre === \"boolean\") resultado.memoria_delta.pide_nombre = md.pide_nombre;\n    if (typeof md.pide_telefono === \"boolean\") resultado.memoria_delta.pide_telefono = md.pide_telefono;\n\n    // Datos (compat: datos_capturados)\n    const datos = objeto.datos || objeto.datos_capturados || {};\n\n    const nombre = limpiarDato(datos.nombre);\n    const telefonoRaw = limpiarDato(datos.telefono);\n    const rol = limpiarDato(datos.rol);\n    const apiId = limpiarDato(datos.api_id);\n\n    if (nombre) resultado.nuevo_nombre = nombre;\n\n    const telNorm = normalizarTelefono10(telefonoRaw);\n    if (telNorm) resultado.nuevo_telefono = telNorm;\n\n    if (rol) resultado.nuevo_rol = rol;\n\n    // Mantener api_id del trigger si no viene en la respuesta\n    if (apiId !== null) resultado.api_id = apiId;\n  }\n} catch (e) {\n  // si falla parseo, se quedan defaults\n}\n\n// 4) Garantías mínimas: normaliza teléfono si venía del trigger\nresultado.nuevo_telefono = normalizarTelefono10(resultado.nuevo_telefono) || null;\n\n// IMPORTANTE: Code node v2 devuelve un array de items\nreturn [{ json: resultado }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        736
+      ],
+      "id": "7a0ffd7a-6a24-4974-9ee4-945ba2b42bfc",
+      "name": "AI Cleaner - Recepcionista"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-nano",
+          "mode": "list",
+          "cachedResultName": "GPT-5-NANO"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Tu objetivo es generar un resumen legible para el ser humano del contexto que obtienes de consultar la herramienta GET: Chat Histories, puedes usar emojis por ejemplo si quieres marcar un mensaje como IA 🤖 o si lo quieres marcar como mensaje de humano 👤 también puedes usar numeros si tienes que numerar interacciones.\n  Lo primero que me tienes que indicar es: ❌ Rechazado, motivo: .... (Siempre tienes que poner esto al inicio y siempre debe haber un motivo de rechazo, busca en la herramienta GET: Chat Histories )\nEvita poner textos como \"Aqui esta tu resumen\" etc, procura que sea como si me estuvieras platicando que paso en la interacción\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        1712,
+        400
+      ],
+      "id": "d6d789a5-1c98-44e7-a9c8-4ac9da1a38aa",
+      "name": "AI: Generate Reject Message",
+      "credentials": {
+        "openAiApi": {
+          "id": "g8OPzRDvvB6YO7mf",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE bot_users SET bot_status = 'free' WHERE session_id = '{{ $('Query de Actualización Inteligente').item.json.session_id }}';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2160,
+        80
+      ],
+      "id": "962af4e6-e899-465c-887f-4515956a6731",
+      "name": "SET: BOT FREE2",
+      "credentials": {
+        "postgres": {
+          "id": "qyR2OAIR7tUEVcQf",
+          "name": "Postgres-neon"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "session_id"
+            },
+            {
+              "name": "status"
+            },
+            {
+              "name": "api_contact_id",
+              "type": "number"
+            },
+            {
+              "name": "nombre"
+            },
+            {
+              "name": "telefono_real"
+            },
+            {
+              "name": "bot_status"
+            },
+            {
+              "name": "rejected_count",
+              "type": "number"
+            },
+            {
+              "name": "questionnaire_status"
+            },
+            {
+              "name": "property_id"
+            },
+            {
+              "name": "count_outcontext",
+              "type": "number"
+            },
+            {
+              "name": "message"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -688,
+        336
+      ],
+      "id": "f7125ab4-72bf-411f-8b73-fcb6a08f8455",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "=892218773979929",
+        "recipientPhoneNumber": "={{ $json.session_id }}",
+        "textBody": "={{ $json.last_bot_reply }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        1728,
+        80
+      ],
+      "id": "8810f1b1-17c3-45d6-a503-323f6662dc80",
+      "name": "Send message",
+      "webhookId": "f10bdfda-5d5f-4e89-814a-5e96d962694e",
+      "notesInFlow": false,
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "credentials": {
+        "whatsAppApi": {
+          "id": "s0OzaeWmw3lzqhNG",
+          "name": "WhatsApp - testing v2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.last_intencion }}",
+                    "rightValue": "general_inquiry",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "2e005d8e-93e5-4787-b124-7025bd6f8eca"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "General Inq"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c88f89d9-773f-4614-b57c-7239cae52ff2",
+                    "leftValue": "={{ $json.last_intencion }}",
+                    "rightValue": "personal_data",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Data"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "08ec601a-9937-4174-ae39-e54e1a71206f",
+                    "leftValue": "={{ $json.last_intencion }}",
+                    "rightValue": "greetings",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Grettings"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1344,
+        80
+      ],
+      "id": "da527720-c8ab-4596-9b00-d4c6979eeaa8",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "=892218773979929",
+        "recipientPhoneNumber": "={{ $json.session_id }}",
+        "textBody": "={{ $json.last_bot_reply }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        1360,
+        -256
+      ],
+      "id": "c3b97de3-6772-42da-ac33-52029eb154ae",
+      "name": "Send message1",
+      "webhookId": "f10bdfda-5d5f-4e89-814a-5e96d962694e",
+      "notesInFlow": false,
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "credentials": {
+        "whatsAppApi": {
+          "id": "s0OzaeWmw3lzqhNG",
+          "name": "WhatsApp - testing v2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-nano",
+          "mode": "list",
+          "cachedResultName": "GPT-5-NANO"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "={{ $json.message }}"
+            },
+            {
+              "role": "system",
+              "content": "=Eres un clasificador de intención.\n\nTu tarea es:\n\nDetectar la intención del mensaje del usuario.\n\nGenerar una respuesta mínima SOLO cuando sea necesario.\n\nNo expliques. No uses markdown. No agregues texto fuera del JSON.\n\nINTENCIONES PERMITIDAS\n\nmisbehavior\n\ntelefono\n\nname\n\nproperty_inquiry\n\ngreetings\n\ngeneral_inquiry\n\nREGLAS DE PRIORIDAD (OBLIGATORIAS)\n\nEvalúa en este orden exacto:\n\nmisbehavior\n\ntelefono\n\nname\n\nproperty_inquiry\n\ngreetings\n\ngeneral_inquiry\n\nDEFINICIONES CLAVE\nmisbehavior\n\nSi hay insultos, groserías, amenazas o lenguaje ofensivo.\n\ntelefono\n\nSi el mensaje contiene:\n\ncualquier intento de número telefónico, incluso incompleto\n\n5 o más dígitos consecutivos o no consecutivos\n\nejemplos válidos:\n\n59177781\n\n55 59 17\n\nmi número es 55\n\n5559177781\n\nLógica de teléfono\n\nSi detectas 10 dígitos → teléfono completo\n\nSi detectas menos de 10 dígitos → teléfono incompleto\n\nname\n\nSi contiene un nombre completo válido:\n\n2 o más palabras\n\nprincipalmente letras\n\nejemplo: Juan Pérez\n\nproperty_inquiry\n\nSi pregunta por rentar, comprar, vender, visitar inmuebles, precio, ubicación o disponibilidad.\n\ngreetings\n\nSi es solo saludo o cortesía breve.\n\ngeneral_inquiry\n\nCualquier otro mensaje.\n\nRESPUESTA (response)\n\nSi intencion = telefono y el teléfono es incompleto →\nresponse = \"Gracias por tu info, sin embargo necesito tu teléfono a 10 dígitos: ej, 5587929965\"\n\nSi intencion = telefono y el teléfono está completo →\nresponse = \"\" (cadena vacía)\n\nSi intencion = misbehavior →\nresponse = \"En Inmobiliaria Villanueva García, exigimos respeto en las comunicaciones por lo tanto, a partir de este momento quedas bloquedo en nuestros sitemas.\"\n\nEn cualquier otro caso →\nresponse = \"\"\n\nFORMATO DE SALIDA (OBLIGATORIO)\n\nDevuelve ÚNICAMENTE este JSON válido:\n\n{\n\"intencion\": \"\",\n\"response\": \"\"\n}\n\nEJEMPLOS (COMPORTAMIENTO ESPERADO)\n\nInput: 59177781\nOutput:\n{\n\"intencion\": \"telefono\",\n\"response\": \"Perfecto, ¿podrías compartirme tu número completo a 10 dígitos, por favor?\"\n}\n\nInput: 5559177781\nOutput:\n{\n\"intencion\": \"telefono\",\n\"response\": \"\"\n}\n\nInput: Hola\nOutput:\n{\n\"intencion\": \"greetings\",\n\"response\": \"\"\n}\n\nInput: Juan Pérez\nOutput:\n{\n\"intencion\": \"name\",\n\"response\": \"\"\n}\n\nInput: Vete al carajo\nOutput:\n{\n\"intencion\": \"misbehavior\",\n\"response\": \"No puedo continuar debido al lenguaje utilizado.\"\n}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        -480,
+        336
+      ],
+      "id": "b2ae5d5b-70d8-4551-bb09-290e53cf6b8f",
+      "name": "Clasificador de Intención",
+      "credentials": {
+        "openAiApi": {
+          "id": "g8OPzRDvvB6YO7mf",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Valor por defecto seguro\nlet resultado = {\n  intencion: \"general_inquiry\",\n  response: \"\"\n};\n\ntry {\n  // 1) Tomamos el texto crudo que devuelve el AI\n  const textoIA =\n    $input.item?.json?.output?.[0]?.content?.[0]?.text || \"\";\n\n  // 2) Buscamos el JSON dentro del texto\n  const inicio = textoIA.indexOf(\"{\");\n  const fin = textoIA.lastIndexOf(\"}\") + 1;\n\n  if (inicio !== -1 && fin !== -1 && fin > inicio) {\n    const jsonLimpio = textoIA.substring(inicio, fin);\n\n    // 3) Parseamos el JSON\n    const obj = JSON.parse(jsonLimpio);\n\n    // 4) Validamos y asignamos solo lo que nos interesa\n    resultado.intencion = obj.intencion || resultado.intencion;\n    resultado.response = obj.response || \"\";\n  }\n} catch (error) {\n  // En caso de cualquier error, no rompemos el flujo\n  resultado = {\n    intencion: \"general_inquiry\",\n    response: \"\"\n  };\n}\n\n// 5) Retornamos SOLO el objeto limpio\nreturn [\n  {\n    json: resultado\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -128,
+        336
+      ],
+      "id": "a29b2997-bec1-4cb8-a7f5-528a34a96042",
+      "name": "AI Cleaner"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.intencion }}",
+                    "rightValue": "property_inquiry",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "5787c70e-1fc5-45b7-94da-2a378ad7dcc8"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "🏡 Inmueble"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "cc7baa4e-46d4-4e96-b428-0fa58f2b83f2",
+                    "leftValue": "={{ $json.intencion }}",
+                    "rightValue": "misbehavior",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "🤬 Misbehavior"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a98bbf69-ba90-4415-b5a4-08aabeb96ee6",
+                    "leftValue": "={{ $json.intencion }}",
+                    "rightValue": "greetings",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "👋 Greetings"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "60f31e42-239c-4191-8f40-507115db1d60",
+                    "leftValue": "={{ $json.intencion }}",
+                    "rightValue": "general_inquiry",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "❓General"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        272,
+        16
+      ],
+      "id": "9607b281-7822-4c4f-9dbd-217bc8b0a842",
+      "name": "Switch Intención"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "zqNARGwhVnDzarCp",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/zqNARGwhVnDzarCp",
+          "cachedResultName": "Busqueda de Inmueble"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $('When Executed by Another Workflow').item.json.session_id }}",
+            "status": "={{ $('When Executed by Another Workflow').item.json.status }}",
+            "intencion": "={{ $json.intencion }}",
+            "message": "={{ $('When Executed by Another Workflow').item.json.message }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "intencion",
+              "displayName": "intencion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "response",
+              "displayName": "response",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -144,
+        0
+      ],
+      "id": "422dc331-e275-4d13-a3d7-dd89f51e59c2",
+      "name": "Call 'Busqueda de Inmueble'"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5",
+          "mode": "list",
+          "cachedResultName": "GPT-5"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=En la línea tenemos a {{ $json.nombre }}, la respuesta anterior que le dimos fue: \"{{ $json.last_bot_reply }}\", con la intención: {{ $json.last_intencion }}, ahora tenemos la respuesta del usuario: \"{{ $('When Executed by Another Workflow').first().json.message }}\" cuya respuesta ha sido catalogada con la intención: \"{{ $('AI Cleaner').first().json.intencion }}\" tu trabajo es evaluar si la respuesta del usuario corresponde con lo que el sistema está esperando \"{{ $json.last_bot_reply }}\""
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        -656,
+        576
+      ],
+      "id": "f2f9c350-a210-4c2e-bfc4-edaac246c8e8",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "g8OPzRDvvB6YO7mf",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM bot_users WHERE session_id = '{{ $('When Executed by Another Workflow').first().json.session_id }}'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        80,
+        336
+      ],
+      "id": "a7d477d2-c6c0-40a0-a84f-ea55b55e9c74",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "qyR2OAIR7tUEVcQf",
+          "name": "Postgres-neon"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "session_id": "5215559177781",
+          "status": "new",
+          "api_contact_id": 934,
+          "nombre": "🤖2.0 - alfgow",
+          "bot_status": "processing",
+          "rejected_count": 0,
+          "questionnaire_status": "none",
+          "count_outcontext": 0,
+          "message": "Tienen casas en la roma?"
+        }
+      }
+    ],
+    "Clasificador de Intención": [
+      {
+        "json": {
+          "output": [
+            {
+              "id": "msg_0d230214a08e50eb00695eeb176fb0819eb2246c8cec1577fa",
+              "type": "message",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "annotations": [],
+                  "logprobs": [],
+                  "text": "{\n  \"intencion\": \"property_inquiry\",\n  \"response\": \"\"\n}"
+                }
+              ],
+              "role": "assistant"
+            }
+          ]
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "AI Cleaner": [
+      {
+        "json": {
+          "intencion": "property_inquiry",
+          "response": ""
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Execute a SQL query": [
+      {
+        "json": {
+          "session_id": "5215559177781",
+          "status": "new",
+          "api_contact_id": 934,
+          "nombre": "Alfonso Villanueva",
+          "created_at": "2026-01-03T05:39:59.080Z",
+          "updated_at": "2026-01-07T22:29:18.600Z",
+          "telefono_real": "null",
+          "rol": "null",
+          "bot_status": "free",
+          "rejected_count": 0,
+          "questionnaire_status": "none",
+          "property_id": null,
+          "count_outcontext": 0,
+          "veces_pidiendo_nombre": 2,
+          "veces_pidiendo_telefono": 4,
+          "last_intencion": "personal_data",
+          "last_accion": "responder",
+          "last_bot_reply": "Perfecto, ahora compárteme tu número de teléfono a 10 dígitos, por favor."
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Guardar Veto Postgress": {
+      "main": [
+        [
+          {
+            "node": "Reject Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Conversacion": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Story Chat": {
+      "main": [
+        [
+          {
+            "node": "Formatear Conversacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SET: Blocked": {
+      "main": [
+        [
+          {
+            "node": "SET: Blocked Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch: Block or Continue": {
+      "main": [
+        [
+          {
+            "node": "Send message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Guardar Veto Postgress",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SET prospecting status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI: Recepcionista",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query de Actualización Inteligente": {
+      "main": [
+        [
+          {
+            "node": "Switch: Block or Continue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI: Recepcionista": {
+      "main": [
+        [
+          {
+            "node": "AI Cleaner - Recepcionista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SET prospecting status": {
+      "main": [
+        [
+          {
+            "node": "Transfer Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reject Chat": {
+      "main": [
+        [
+          {
+            "node": "AI: Generate Reject Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transfer Chat": {
+      "main": [
+        [
+          {
+            "node": "SET: Prospecting Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI: Recepcionista",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API: Add Comment1": {
+      "main": [
+        [
+          {
+            "node": "SET: Blocked Status1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET: Chat Histories": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI: Generate Reject Message",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SET: Blocked Status": {
+      "main": [
+        [
+          {
+            "node": "Get Story Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API: Update Contact": {
+      "main": [
+        [
+          {
+            "node": "SET: BOT FREE2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Cleaner - Recepcionista": {
+      "main": [
+        []
+      ]
+    },
+    "AI: Generate Reject Message": {
+      "main": [
+        [
+          {
+            "node": "API: Add Comment1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Clasificador de Intención",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message": {
+      "main": [
+        [
+          {
+            "node": "API: Update Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message1": {
+      "main": [
+        [
+          {
+            "node": "SET: Blocked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clasificador de Intención": {
+      "main": [
+        [
+          {
+            "node": "AI Cleaner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Cleaner": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Intención": {
+      "main": [
+        []
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c4ddc849-00a5-4004-82b6-f323e645ea2c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "37571b6e3b06c0ce894d50931b94c0b80b70f40d5b859a8ce717ce6c0e3d4b9d"
+  },
+  "id": "JN2MAz79dRGE2RqZ",
+  "tags": [
+    {
+      "updatedAt": "2026-01-03T05:21:43.395Z",
+      "createdAt": "2026-01-03T05:21:43.395Z",
+      "id": "CGZf0gxA5685L0Mc",
+      "name": "2.0"
+    }
+  ]
+}

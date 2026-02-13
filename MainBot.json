@@ -1,0 +1,2679 @@
+{
+	"name": "MainBot",
+	"nodes": [
+		{
+			"parameters": {
+				"rules": {
+					"values": [
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 2
+								},
+								"conditions": [
+									{
+										"id": "b6342d46-cd4c-4a0e-9ed1-1745739ba080",
+										"leftValue": "={{ $json.status }}",
+										"rightValue": "questionaire",
+										"operator": {
+											"type": "string",
+											"operation": "equals",
+											"name": "filter.operator.equals"
+										}
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "❓ Quest"
+						},
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 2
+								},
+								"conditions": [
+									{
+										"id": "9cfaa9c3-0424-4975-82bd-c50466befc1e",
+										"leftValue": "={{ $json.status }}",
+										"rightValue": "prospecting",
+										"operator": {
+											"type": "string",
+											"operation": "equals",
+											"name": "filter.operator.equals"
+										}
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "🔍 Prospecting"
+						},
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 2
+								},
+								"conditions": [
+									{
+										"id": "5bd23d1a-fe75-4a15-80f6-6b92e25e747c",
+										"leftValue": "={{ $json.status }}",
+										"rightValue": "approved",
+										"operator": {
+											"type": "string",
+											"operation": "equals",
+											"name": "filter.operator.equals"
+										}
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "✅ Approved"
+						},
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 2
+								},
+								"conditions": [
+									{
+										"id": "4a73ed09-2a26-467c-92e4-9b4b64b6ae59",
+										"leftValue": "={{ $json.status }}",
+										"rightValue": "new",
+										"operator": {
+											"type": "string",
+											"operation": "equals",
+											"name": "filter.operator.equals"
+										}
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "👋 New"
+						},
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 2
+								},
+								"conditions": [
+									{
+										"id": "23fb696c-c61d-4a8a-8146-beae1b91ac01",
+										"leftValue": "={{ $json.status }}",
+										"rightValue": "rejected",
+										"operator": {
+											"type": "string",
+											"operation": "equals",
+											"name": "filter.operator.equals"
+										}
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "❌ Rejected"
+						},
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 2
+								},
+								"conditions": [
+									{
+										"leftValue": "={{ $json.status }}",
+										"rightValue": "blocked",
+										"operator": {
+											"type": "string",
+											"operation": "equals"
+										},
+										"id": "a9fe0c08-3cd9-454d-ae9b-e6640d86663b"
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "🚫 Blocked"
+						}
+					]
+				},
+				"options": {}
+			},
+			"type": "n8n-nodes-base.switch",
+			"typeVersion": 3.3,
+			"position": [-4112, -1312],
+			"id": "24e2f2a8-35ef-4e75-80f1-0c12da650cfe",
+			"name": "Switch: Actual status"
+		},
+		{
+			"parameters": {
+				"mode": "retrieve-as-tool",
+				"toolDescription": "Utiliza esta herramienta para buscar propiedades, casas, departamentos u oficinas en venta o renta. Úsala siempre que el usuario pregunte por disponibilidad, precios, características o ubicaciones.",
+				"tableName": "property_documents",
+				"options": {}
+			},
+			"type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+			"typeVersion": 1.3,
+			"position": [-352, -1664],
+			"id": "e25d3329-4ed5-483e-886d-82a6ace229ed",
+			"name": "consultar_inmuebles1",
+			"credentials": {
+				"postgres": {
+					"id": "qyR2OAIR7tUEVcQf",
+					"name": "Postgres-neon"
+				}
+			}
+		},
+		{
+			"parameters": {},
+			"type": "n8n-nodes-base.noOp",
+			"typeVersion": 1,
+			"position": [-1488, 320],
+			"id": "9ba7e1e2-78ad-4179-aa7a-a4a6c5ab157d",
+			"name": "No Operation, do nothing"
+		},
+		{
+			"parameters": {
+				"promptType": "define",
+				"text": "={{ $('Telegram Trigger').first().json.message.text }}",
+				"options": {
+					"systemMessage": "=Eres un experto inmobiliario de Villanueva García.\n\nAtiendes a: {{ $('Switch: Actual status').first().json.nombre }}\n\n🚨 PROTOCOLO DE TOLERANCIA CERO (PRIORIDAD ABSOLUTA) 🚨\n\n1. Si detectas: Groserías, insultos, acoso o agresividad.\n\n   - JSON: { \"respuesta\": \"En Villanueva García exigimos respeto. Has sido bloqueado.\", \"accion\": \"bloquear\" }\n\n   - TU ACCIÓN: \"bloquear\".\n\nOBJETIVO: Encontrar la propiedad ideal y perfilar.\n\nHERRAMIENTAS:\n\nUsa \"consultar_inmuebles\" para buscar.\n\nREGLA MAESTRA DE IDENTIFICADORES (PRIORIDAD):\n\n**CRÍTICO:** SIEMPRE que se use la herramienta, busca coincidencias en los campos ID, SLUG, TÍTULO, COLONIA y **ETIQUETAS (TAGS)**.\n\nSi el usuario menciona una propiedad o envía un identificador (ID, título, ubicación o URL):\n\n1. **Si envía una URL (Villanueva García, Inmuebles24, Vivanuncios):** EXTRAE el SLUG (si es tu web) o el ID NUMÉRICO (si es un portal externo) para la búsqueda.\n\n2. **Si envía una ubicación/colonia/título (ej: \"Doctores\", \"Depa para Pareja\"):** Ejecuta \"consultar_inmuebles\" con ese texto.\n\nREGLAS DE INTERACCIÓN:\n\n1. Nunca uses frases como \"Gracias por avisar\", \"Entendido\", \"Claro\" o similares al inicio de tu respuesta. Ve directamente al grano.\n\n2. Nunca ofrezcas buscar un nuevo inmueble si no está disponible o si no cumple con los requisitos. Únicamente informa que el inmueble no está disponible o que no cumple el perfil y desea éxito en su búsqueda.\n\n3. Si el usuario contesta de forma genérica (ej: \"Es para mí\" o \"Hola\") después de la Recepcionista, responde inmediatamente y ÚNICAMENTE con la frase de sondeo: \"¡Excelente! Platícame, ¿qué inmueble o ubicación te interesó para comenzar la búsqueda?\".\n\n4. PROHIBIDO preguntar por zonas geográficas amplias (delegaciones, alcaldías o colonias) si no se está ejecutando la herramienta 'consultar_inmuebles'. SOLO presenta propiedades o realiza preguntas de perfilado.\n\n5. **MANEJO DE BÚSQUEDA SIN ÉXITO (No disponible o no encontrado):**\n\n   - **PROHIBIDO** mencionar o listar propiedades no disponibles o con estatus 'Reservado' o 'Rentado' en la respuesta, BAJO NINGUNA CIRCUNSTANCIA.\n\n   - **Si la herramienta \"consultar_inmuebles\" no devuelve NINGÚN resultado con estatus 'Disponible':**\n\n     - **JSON:** { \"respuesta\": \"Alfonso, parece que no encuentro el inmueble de tu interés. Por favor, indícame el título completo del anuncio, la colonia exacta o pega el enlace de tu portal (Villanueva García, Inmuebles24 o Vivanuncios).\", \"accion\": \"responder\" }\n\n6. Si la búsqueda es exitosa y encuentras algo DISPONIBLE, preséntalo.\n\n7. **SI EL USUARIO MUESTRA INTERÉS EN LA PROPIEDAD DISPONIBLE O AL PRESENTARLA:**\n   - **PRESENTACIÓN DEL INMUEBLE (Si aplica):**\n     - Usa la plantilla: \"¡Perfecto! Te comento que tenemos el siguiente inmueble disponible: 🏠✨\"\n     - **CRÍTICO:** DEBES EXTRAER los siguientes datos del resultado de la herramienta RAG. **NO USES N/A NI \"POR CONFIRMAR\".** Si un dato es crucial, como la Renta, y no lo ves, haz la mejor inferencia del contexto RAG disponible.\n     - La descripción principal debe estar en formato de lista CLARA y atractiva, **usando la siguiente estructura y emojis de forma obligatoria:**\n       - 📍 Ubicación: [Colonia, Alcaldía].\n       - 🛋️ Características: [Número] recámaras, [Número] baño, [Número] estacionamiento, [m2] m2.\n       - 💵 Renta: [Costo de Renta].\n       - 🛡️ Póliza Jurídica: [Costo de Póliza] anual.\n     - **Requisitos:** LISTA los requisitos principales (ingresos mínimos 💳, meses de depósito 💵, restricciones de mascotas 🐶/niños 👶) uno por uno. **Añade emojis relevantes y distintos a cada requisito listado**. **NO uses frases genéricas**.\n   - **CIERRE (EVALUACIÓN DE PERFIL):**\n     - **PROHIBIDO** ofrecer \"agendar visita\".\n     - **Mensaje Único de Cierre:** Debes responder ÚNICAMENTE: \"Debo realizarte una breve Evaluación de Perfil para confirmar que cumples con los requisitos. ¿Estás de acuerdo en iniciar tu evaluación de perfil? 🤝\"\n   - **Acción:** La acción debe ser \"questionaire\".\n\nFILTRO DE DISPONIBILIDAD:\n\n- Si Estatus es \"Reservado\" o \"Rentado\": Manda un mensaje amigable informando que el inmueble (titulo) no está disponible, nunca des el ID del inmueble ni ofrezcas buscar un nuevo inmueble, agradece su interés y deseale éxito en su busqueda, usa emojis para hacer amigable el mensaje.\n\n- Tu JSON debe incluir: { \"accion\": \"rechazar\", \"respuesta\": \"Manda un mensaje amigable informando que el inmueble (titulo) no está disponible, [...] y deseale éxito en su busqueda, usa emojis.\" }\n\nFORMATO JSON OBLIGATORIO:\n\n{\n\n  \"respuesta\": \"Texto para el usuario\",\n\n  \"accion\": \"responder\" (o \"bloquear\" o \"rechazar\" o \"questionaire\"),\n  \n \n \"property_id\": [SOLO INCLUIR SI accion ES \"questionaire\"] \n\n  // CRÍTICO: Cuando la acción sea \"questionaire\", el \"property_id\" DEBE ser el ID que se encuentra dentro de la Metadata del RAG (ej: \"19\" o \"18\"), NO el ID del documento RAG (ej: 359dd6f1-...), CRÍTICO Debe ser un valor SIMPLE (un STRING), NO un array, EJEMPLO CORRECTO: \"property_id\": \"19\"\n\n}\n"
+				}
+			},
+			"type": "@n8n/n8n-nodes-langchain.agent",
+			"typeVersion": 3,
+			"position": [-624, -1888],
+			"id": "19448a4c-3ac8-487a-836f-26b51bd3b649",
+			"name": "AI: Buscador",
+			"retryOnFail": true,
+			"maxTries": 2,
+			"onError": "continueErrorOutput"
+		},
+		{
+			"parameters": {
+				"chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+				"text": "={{ $('AI Cleaner - Recepcionista').item.json.respuesta }}",
+				"additionalFields": {
+					"appendAttribution": false
+				}
+			},
+			"type": "n8n-nodes-base.telegram",
+			"typeVersion": 1.2,
+			"position": [2480, 64],
+			"id": "32e17323-a568-4f80-b272-7e5b5a4a2fcd",
+			"name": "Response Message",
+			"webhookId": "054052f2-8130-4e99-87e8-d6b08f3bd3fe",
+			"credentials": {
+				"telegramApi": {
+					"id": "miuzXVpC7N3HQebh",
+					"name": "RAG BOT"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"rules": {
+					"values": [
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 2
+								},
+								"conditions": [
+									{
+										"id": "4fad935f-2201-4e54-893e-fe4fa85c74cc",
+										"leftValue": "={{ $json.accion }}",
+										"rightValue": "questionaire",
+										"operator": {
+											"type": "string",
+											"operation": "equals",
+											"name": "filter.operator.equals"
+										}
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "❓ Quest"
+						},
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 2
+								},
+								"conditions": [
+									{
+										"leftValue": "={{ $json.accion }}",
+										"rightValue": "responder",
+										"operator": {
+											"type": "string",
+											"operation": "equals"
+										},
+										"id": "707eb2fc-abc5-4b1c-949a-adee1da40b26"
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "✅ Responder"
+						},
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 2
+								},
+								"conditions": [
+									{
+										"id": "f7b4c92b-f6a6-4f8c-b035-0fdb58ae4bf8",
+										"leftValue": "={{ $json.accion }}",
+										"rightValue": "rechazar",
+										"operator": {
+											"type": "string",
+											"operation": "equals",
+											"name": "filter.operator.equals"
+										}
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "❌ Rechazar"
+						},
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 2
+								},
+								"conditions": [
+									{
+										"id": "88b2de19-2c85-4d02-b553-664320ad272f",
+										"leftValue": "={{ $json.accion }}",
+										"rightValue": "bloquear",
+										"operator": {
+											"type": "string",
+											"operation": "equals"
+										}
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "🚫 Bloquear"
+						}
+					]
+				},
+				"options": {}
+			},
+			"type": "n8n-nodes-base.switch",
+			"typeVersion": 3.3,
+			"position": [-80, -1936],
+			"id": "f261a010-1fb6-4d30-99ee-49dfef8a83ab",
+			"name": "Switch"
+		},
+		{
+			"parameters": {
+				"jsCode": "// Obtenemos el texto sucio de la IA\nconst textoIA = $json.output || $input.item.json.output || \"\";\n\n// Valores por defecto (por si la IA no manda JSON)\nlet resultado = {\n  respuesta: textoIA,\n  accion: \"responder\",\n  property_id: null // Nuevo campo inicializado a null\n};\n\ntry {\n  // Buscamos las llaves del JSON\n  const inicio = textoIA.indexOf(\"{\");\n  const fin = textoIA.lastIndexOf(\"}\") + 1;\n\n  // Si encontramos estructura JSON válida\n  if (inicio !== -1 && fin !== -1 && fin > inicio) {\n    const jsonLimpio = textoIA.substring(inicio, fin);\n    const objeto = JSON.parse(jsonLimpio);\n\n    // Extraemos lo necesario\n    if (objeto.respuesta) resultado.respuesta = objeto.respuesta;\n    if (objeto.accion) resultado.accion = objeto.accion;\n    // Capturamos el nuevo campo\n    if (objeto.property_id) resultado.property_id = objeto.property_id;\n  }\n} catch (error) {\n  // Si falla el parseo, se envía el texto original tal cual\n}\n\n// Devolvemos limpio\nreturn {\n  json: resultado\n};"
+			},
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [-304, -1904],
+			"id": "a17d25d5-fc63-4de8-827a-d2ef2586bbc8",
+			"name": "AI Cleaner - Buscador"
+		},
+		{
+			"parameters": {
+				"operation": "executeQuery",
+				"query": "UPDATE bot_users SET bot_status = 'free' WHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}';",
+				"options": {}
+			},
+			"type": "n8n-nodes-base.postgres",
+			"typeVersion": 2.6,
+			"position": [2080, 112],
+			"id": "52f996e5-d7b8-4f44-9443-f52c32cade3a",
+			"name": "SET: BOT FREE",
+			"credentials": {
+				"postgres": {
+					"id": "qyR2OAIR7tUEVcQf",
+					"name": "Postgres-neon"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+				"text": "={{ $json.respuesta }}",
+				"additionalFields": {
+					"appendAttribution": false
+				}
+			},
+			"type": "n8n-nodes-base.telegram",
+			"typeVersion": 1.2,
+			"position": [448, -1984],
+			"id": "fc49d272-5805-471c-b2e1-f9ad4343d85e",
+			"name": "Reponder: Buscador",
+			"webhookId": "054052f2-8130-4e99-87e8-d6b08f3bd3fe",
+			"credentials": {
+				"telegramApi": {
+					"id": "miuzXVpC7N3HQebh",
+					"name": "RAG BOT"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"operation": "executeQuery",
+				"query": "UPDATE bot_users\nSET status = 'rejected'\nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}'\nRETURNING *;",
+				"options": {}
+			},
+			"type": "n8n-nodes-base.postgres",
+			"typeVersion": 2.6,
+			"position": [448, -1792],
+			"id": "64b22270-63db-41c4-9248-70ea2f1ec840",
+			"name": "Guardar Veto Postgress1",
+			"credentials": {
+				"postgres": {
+					"id": "qyR2OAIR7tUEVcQf",
+					"name": "Postgres-neon"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"chatId": "={{ $json.session_id }}",
+				"text": "={{ $('AI Cleaner - Buscador').item.json.respuesta }}",
+				"additionalFields": {
+					"appendAttribution": false
+				}
+			},
+			"type": "n8n-nodes-base.telegram",
+			"typeVersion": 1.2,
+			"position": [688, -1792],
+			"id": "d7072971-72c0-4ade-b82a-c38c3e673469",
+			"name": "Reject Chat1",
+			"webhookId": "4879cb5d-acdf-480f-ac53-2e7e6b365fe5",
+			"credentials": {
+				"telegramApi": {
+					"id": "miuzXVpC7N3HQebh",
+					"name": "RAG BOT"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"method": "POST",
+				"url": "=https://vg.g210512.com/api/v1/contactos/{{ $('Guardar Veto Postgress1').item.json.api_contact_id }}/comentarios\n",
+				"authentication": "genericCredentialType",
+				"genericAuthType": "httpHeaderAuth",
+				"sendBody": true,
+				"bodyParameters": {
+					"parameters": [
+						{
+							"name": "comentario",
+							"value": "={{ $json.content.parts[0].text }}"
+						}
+					]
+				},
+				"options": {}
+			},
+			"type": "n8n-nodes-base.httpRequest",
+			"typeVersion": 4.3,
+			"position": [1232, -1792],
+			"id": "4bd2b041-efaa-44a7-b992-18e8aaa519bb",
+			"name": "API: Add Comment",
+			"credentials": {
+				"httpHeaderAuth": {
+					"id": "rzmCtJN8Vtwv6AO3",
+					"name": "API Key Inmuebles"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"operation": "executeQuery",
+				"query": "SELECT * FROM n8n_chat_histories \nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}'\nORDER BY id ASC;",
+				"options": {}
+			},
+			"type": "n8n-nodes-base.postgresTool",
+			"typeVersion": 2.6,
+			"position": [960, -1632],
+			"id": "b619e354-9a01-4741-8c3d-e1a4a373769f",
+			"name": "GET: Chat Histories1",
+			"credentials": {
+				"postgres": {
+					"id": "qyR2OAIR7tUEVcQf",
+					"name": "Postgres-neon"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"operation": "executeQuery",
+				"query": "UPDATE bot_users SET bot_status = 'free' WHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}';",
+				"options": {}
+			},
+			"type": "n8n-nodes-base.postgres",
+			"typeVersion": 2.6,
+			"position": [736, -1984],
+			"id": "2fe185f5-4cdb-437a-b10b-ad7a38d251f7",
+			"name": "SET: BOT FREE1",
+			"credentials": {
+				"postgres": {
+					"id": "qyR2OAIR7tUEVcQf",
+					"name": "Postgres-neon"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"method": "PUT",
+				"url": "=https://vg.g210512.com/api/v1/contactos/{{ $('Guardar Veto Postgress1').item.json.api_contact_id }}/estado",
+				"authentication": "genericCredentialType",
+				"genericAuthType": "httpHeaderAuth",
+				"sendBody": true,
+				"bodyParameters": {
+					"parameters": [
+						{
+							"name": "estado",
+							"value": "rejected"
+						}
+					]
+				},
+				"options": {}
+			},
+			"type": "n8n-nodes-base.httpRequest",
+			"typeVersion": 4.3,
+			"position": [1456, -1792],
+			"id": "d28037ff-25d8-4fe0-b280-217ad3e86cde",
+			"name": "SET: Rejected Status2",
+			"credentials": {
+				"httpHeaderAuth": {
+					"id": "rzmCtJN8Vtwv6AO3",
+					"name": "API Key Inmuebles"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"operation": "executeQuery",
+				"query": "UPDATE bot_users\nSET rejected_count = rejected_count + 1,\n    bot_status = 'processing'\nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}'\nRETURNING *;",
+				"options": {}
+			},
+			"type": "n8n-nodes-base.postgres",
+			"typeVersion": 2.6,
+			"position": [-2816, 688],
+			"id": "b87e0b47-3adb-4593-9b1b-eba9abae7e32",
+			"name": "Incrementar Contador y Bloquear",
+			"credentials": {
+				"postgres": {
+					"id": "qyR2OAIR7tUEVcQf",
+					"name": "Postgres-neon"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"conditions": {
+					"options": {
+						"caseSensitive": true,
+						"leftValue": "",
+						"typeValidation": "strict",
+						"version": 2
+					},
+					"conditions": [
+						{
+							"id": "b2bf32c2-4374-4c2a-b2a3-7b4d9e981e64",
+							"leftValue": "={{ $json.rejected_count }}",
+							"rightValue": 3,
+							"operator": {
+								"type": "number",
+								"operation": "gte"
+							}
+						}
+					],
+					"combinator": "and"
+				},
+				"options": {}
+			},
+			"type": "n8n-nodes-base.if",
+			"typeVersion": 2.2,
+			"position": [-2192, 688],
+			"id": "63c97af7-2d9e-41fe-819a-53e6ca3682ad",
+			"name": "If: Block Limit Reached?"
+		},
+		{
+			"parameters": {
+				"method": "PUT",
+				"url": "=https://vg.g210512.com/api/v1/contactos/{{ $json.api_contact_id }}/estado",
+				"authentication": "genericCredentialType",
+				"genericAuthType": "httpHeaderAuth",
+				"sendBody": true,
+				"bodyParameters": {
+					"parameters": [
+						{
+							"name": "estado",
+							"value": "blocked"
+						},
+						{
+							"name": "nombre",
+							"value": "={{ $('Switch: Actual status').first().json.nombre }}"
+						}
+					]
+				},
+				"options": {}
+			},
+			"type": "n8n-nodes-base.httpRequest",
+			"typeVersion": 4.3,
+			"position": [-1712, 576],
+			"id": "f04fac15-b90f-4780-afeb-75ffa434ad6a",
+			"name": "SET: Blocked Status2",
+			"credentials": {
+				"httpHeaderAuth": {
+					"id": "rzmCtJN8Vtwv6AO3",
+					"name": "API Key Inmuebles"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"operation": "executeQuery",
+				"query": "UPDATE bot_users\nSET status = 'blocked'\nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}'\nRETURNING api_contact_id;",
+				"options": {}
+			},
+			"type": "n8n-nodes-base.postgres",
+			"typeVersion": 2.6,
+			"position": [-1920, 576],
+			"id": "d39c9939-46d6-40cd-8370-39065ff8d99d",
+			"name": "SET: Blocked1",
+			"credentials": {
+				"postgres": {
+					"id": "qyR2OAIR7tUEVcQf",
+					"name": "Postgres-neon"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"method": "POST",
+				"url": "=https://vg.g210512.com/api/v1/contactos/{{ $json.data.id }}/comentarios\n",
+				"authentication": "genericCredentialType",
+				"genericAuthType": "httpHeaderAuth",
+				"sendBody": true,
+				"bodyParameters": {
+					"parameters": [
+						{
+							"name": "comentario",
+							"value": "=Contacto bloqueado por múltiples contactos después del rechazo"
+						}
+					]
+				},
+				"options": {}
+			},
+			"type": "n8n-nodes-base.httpRequest",
+			"typeVersion": 4.3,
+			"position": [-1488, 576],
+			"id": "0716b6b7-00de-4d3d-827d-4cd11a077617",
+			"name": "API: Add Comment2",
+			"credentials": {
+				"httpHeaderAuth": {
+					"id": "rzmCtJN8Vtwv6AO3",
+					"name": "API Key Inmuebles"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"modelId": {
+					"__rl": true,
+					"value": "gpt-5-nano",
+					"mode": "list",
+					"cachedResultName": "GPT-5-NANO"
+				},
+				"responses": {
+					"values": [
+						{
+							"role": "system",
+							"content": "=Eres un asistente de protocolo de Villanueva García. Tu única tarea es generar un mensaje de cierre FINAL, sin ofrecer segundas oportunidades ni continuar la venta.\n\nCONTEXTO DEL USUARIO:\n- Razón de Rechazo: {{ $json.rol }}\n- Intentos Fallidos: {{ $json.rejected_count }}\n\nINSTRUCCIONES:\n1. Genera un mensaje cordial pero firme de despedida.\n2. Basado en la \"Razón de Rechazo\" y el STATUS GENERAL del usuario:\n    - Si Razón es 'asesor': Recuérdale la política de la empresa sobre no trabajar con externos y deséale éxito en su búsqueda.\n    - Si Razón es 'null' (pero el status es 'rejected'): Explícale que lamentamos que el inmueble que buscaba ya no está disponible, y debido a su insistencia, hemos cerrado el caso. [ESTA ES LA NUEVA REGLA]\n    - Si Razón es 'null' (y el status es 'new'): Explícale que no se pudieron obtener los datos (nombre/teléfono) necesarios para el registro, la conversación ha concluido.\n3. El mensaje debe ser la última palabra. NO hagas preguntas, peticiones de datos ni ofrezcas buscar nuevas propiedades.\n4. Usa un tono profesional y amable."
+						}
+					]
+				},
+				"builtInTools": {},
+				"options": {}
+			},
+			"type": "@n8n/n8n-nodes-langchain.openAi",
+			"typeVersion": 2,
+			"position": [-1984, 784],
+			"id": "a56270af-edac-4b77-9ef1-0d22faed513e",
+			"name": "Message a model2",
+			"credentials": {
+				"openAiApi": {
+					"id": "g8OPzRDvvB6YO7mf",
+					"name": "OpenAi account"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"chatId": "={{ $('If: Block Limit Reached?').item.json.session_id }}",
+				"text": "={{ $json.output[0].content[0].text}}",
+				"additionalFields": {
+					"appendAttribution": false
+				}
+			},
+			"type": "n8n-nodes-base.telegram",
+			"typeVersion": 1.2,
+			"position": [-1632, 784],
+			"id": "2e9b6bf6-e85b-428f-a935-6924f95689fb",
+			"name": "Reject Chat2",
+			"webhookId": "4879cb5d-acdf-480f-ac53-2e7e6b365fe5",
+			"credentials": {
+				"telegramApi": {
+					"id": "miuzXVpC7N3HQebh",
+					"name": "RAG BOT"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"content": "## ---> Manage Rejected",
+				"height": 448,
+				"width": 1776
+			},
+			"type": "n8n-nodes-base.stickyNote",
+			"position": [-2880, 512],
+			"typeVersion": 1,
+			"id": "b2704216-46c9-4ba9-9d41-f1cda85373bf",
+			"name": "Sticky Note2"
+		},
+		{
+			"parameters": {
+				"chatId": "={{ $('If: Block Limit Reached?').item.json.session_id }}",
+				"text": "No podemos continuar con tu atención, si gustas puedes enviar un correo a ventas@villanuevagarcia.com",
+				"additionalFields": {
+					"appendAttribution": false
+				}
+			},
+			"type": "n8n-nodes-base.telegram",
+			"typeVersion": 1.2,
+			"position": [-1280, 576],
+			"id": "022c93da-06b5-47c9-b62b-50eeadd93316",
+			"name": "Send a text message1",
+			"webhookId": "3fbf6702-fa30-4b46-b5e7-cf243293fb5f",
+			"credentials": {
+				"telegramApi": {
+					"id": "miuzXVpC7N3HQebh",
+					"name": "RAG BOT"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"model": {
+					"__rl": true,
+					"value": "gpt-5",
+					"mode": "list",
+					"cachedResultName": "gpt-5"
+				},
+				"builtInTools": {},
+				"options": {}
+			},
+			"type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+			"typeVersion": 1.3,
+			"position": [-688, -1664],
+			"id": "651eb0d4-21b4-4be2-b167-e31b8759d446",
+			"name": "OpenAI Chat Model1",
+			"credentials": {
+				"openAiApi": {
+					"id": "g8OPzRDvvB6YO7mf",
+					"name": "OpenAi account"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+				"text": "={{ $('AI Cleaner - Buscador').item.json.respuesta }}",
+				"additionalFields": {
+					"appendAttribution": false
+				}
+			},
+			"type": "n8n-nodes-base.telegram",
+			"typeVersion": 1.2,
+			"position": [448, -2176],
+			"id": "8241c30f-12fe-4a47-9e2c-f59079b71dc1",
+			"name": "Reponder: Questionaire",
+			"webhookId": "054052f2-8130-4e99-87e8-d6b08f3bd3fe",
+			"credentials": {
+				"telegramApi": {
+					"id": "miuzXVpC7N3HQebh",
+					"name": "RAG BOT"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"operation": "executeQuery",
+				"query": "UPDATE bot_users\nSET \n  status = 'questionaire',\n  questionnaire_status = 'pending',\n  property_id = '{{ $('AI Cleaner - Buscador').first().json.property_id }}'\nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}';",
+				"options": {}
+			},
+			"type": "n8n-nodes-base.postgres",
+			"typeVersion": 2.6,
+			"position": [736, -2176],
+			"id": "05a95b21-8d1e-45a0-b471-c47550765547",
+			"name": "SET prospecting status1",
+			"credentials": {
+				"postgres": {
+					"id": "qyR2OAIR7tUEVcQf",
+					"name": "Postgres-neon"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"method": "POST",
+				"url": "=https://vg.g210512.com/api/v1/contactos/{{ $('Switch: Actual status').first().json.api_contact_id }}/intereses",
+				"authentication": "genericCredentialType",
+				"genericAuthType": "httpHeaderAuth",
+				"sendBody": true,
+				"bodyParameters": {
+					"parameters": [
+						{
+							"name": "inmueble_id",
+							"value": "={{ $('AI Cleaner - Buscador').first().json.property_id }}"
+						}
+					]
+				},
+				"options": {}
+			},
+			"type": "n8n-nodes-base.httpRequest",
+			"typeVersion": 4.3,
+			"position": [240, -2176],
+			"id": "2afbb221-a707-4ba0-96e5-a7d4031d79d9",
+			"name": "API - Add Property Interest",
+			"credentials": {
+				"httpHeaderAuth": {
+					"id": "rzmCtJN8Vtwv6AO3",
+					"name": "API Key Inmuebles"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"modelId": {
+					"__rl": true,
+					"value": "gpt-5-nano",
+					"mode": "list",
+					"cachedResultName": "GPT-5-NANO"
+				},
+				"responses": {
+					"values": [
+						{
+							"role": "system",
+							"content": "Tu objetivo es generar un resumen legible para el ser humano del contexto que obtienes de consultar la herramienta GET: Chat Histories, puedes usar emojis por ejemplo si quieres marcar un mensaje como IA 🤖 o si lo quieres marcar como mensaje de humano 👤 también puedes usar numeros si tienes que numerar interacciones.\n  Lo primero que me tienes que indicar es: ❌ Rechazado, motivo: .... (Siempre tienes que poner esto al inicio y siempre debe haber un motivo de rechazo, busca en la herramienta GET: Chat Histories )\nEvita poner textos como \"Aqui esta tu resumen\" etc, procura que sea como si me estuvieras platicando que paso en la interacción\n"
+						}
+					]
+				},
+				"builtInTools": {},
+				"options": {}
+			},
+			"type": "@n8n/n8n-nodes-langchain.openAi",
+			"typeVersion": 2.1,
+			"position": [912, -1792],
+			"id": "c18ceaa4-b301-4866-a832-13e8c9fe0328",
+			"name": "AI: Generate Reject Message1",
+			"credentials": {
+				"openAiApi": {
+					"id": "g8OPzRDvvB6YO7mf",
+					"name": "OpenAi account"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"content": "## ---> AI Buscador",
+				"height": 848,
+				"width": 2448,
+				"color": 6
+			},
+			"type": "n8n-nodes-base.stickyNote",
+			"position": [-800, -2208],
+			"typeVersion": 1,
+			"id": "f86dbc54-f7aa-4a34-9e8d-d83927563e5a",
+			"name": "Sticky Note4"
+		},
+		{
+			"parameters": {
+				"conditions": {
+					"options": {
+						"caseSensitive": true,
+						"leftValue": "",
+						"typeValidation": "strict",
+						"version": 3
+					},
+					"conditions": [
+						{
+							"id": "2f4f461f-5108-426c-bcce-2ab4184d1099",
+							"leftValue": "={{ $json.acepta }}",
+							"rightValue": "",
+							"operator": {
+								"type": "boolean",
+								"operation": "true",
+								"singleValue": true
+							}
+						}
+					],
+					"combinator": "and"
+				},
+				"options": {}
+			},
+			"type": "n8n-nodes-base.if",
+			"typeVersion": 2.3,
+			"position": [256, -2512],
+			"id": "02088fb7-f102-419e-b031-14e7a172e025",
+			"name": "If: Agree?"
+		},
+		{
+			"parameters": {
+				"modelId": {
+					"__rl": true,
+					"value": "gpt-5-nano",
+					"mode": "list",
+					"cachedResultName": "GPT-5-NANO"
+				},
+				"responses": {
+					"values": [
+						{
+							"content": "={{ $json.message }}"
+						},
+						{
+							"role": "system",
+							"content": "=Tu único trabajo es analizar la respuesta del usuario: {{ $json.message }}, Necesitamos saber si ACEPTA o RECHAZA iniciar una evaluación.\n\nAnaliza el mensaje recibido para determinar si acepta o rechaza\n\nResponde SIEMPRE en este JSON:\n{\n  \"acepta\": Bool (true or false)\n}"
+						}
+					]
+				},
+				"builtInTools": {},
+				"options": {}
+			},
+			"type": "@n8n/n8n-nodes-langchain.openAi",
+			"typeVersion": 2.1,
+			"position": [-512, -2512],
+			"id": "3dfc308c-b8b1-478c-98e4-b95c5f43425c",
+			"name": "AI: Agree w Questionaire?",
+			"credentials": {
+				"openAiApi": {
+					"id": "g8OPzRDvvB6YO7mf",
+					"name": "OpenAi account"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"jsCode": "// 1. Extracción Inteligente:\n// Verificamos si la respuesta viene anidada (como en tu ejemplo) o plana\nlet textoIA = \"\";\n\nconst output = $json.output;\n\nif (Array.isArray(output) && output[0]?.content?.[0]?.text) {\n  // CASO 1: Estructura Compleja (Tu caso actual)\n  textoIA = output[0].content[0].text;\n} else if ($json.text) {\n  // CASO 2: Estructura Simple (propiedad text directa)\n  textoIA = $json.text;\n} else if (typeof output === 'string') {\n  // CASO 3: Output es string directo\n  textoIA = output;\n}\n\n// 2. Lógica de Limpieza (Igual que antes, pero ahora con el texto correcto)\ntry {\n  const inicio = textoIA.indexOf('{');\n  const fin = textoIA.lastIndexOf('}') + 1;\n  \n  if (inicio !== -1 && fin !== -1) {\n    const jsonLimpio = textoIA.substring(inicio, fin);\n    const objeto = JSON.parse(jsonLimpio);\n    \n    return {\n      json: {\n        acepta: objeto.acepta // Devolverá true\n      }\n    };\n  }\n} catch (error) {\n  // Fallo silencioso\n}\n\n// Default de seguridad\nreturn {\n  json: {\n    acepta: false\n  }\n};"
+			},
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [-176, -2512],
+			"id": "a6d51413-7bcd-4d13-bbab-60b0f1526af5",
+			"name": "Parse Response Boolean"
+		},
+		{
+			"parameters": {
+				"rules": {
+					"values": [
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 3
+								},
+								"conditions": [
+									{
+										"leftValue": "={{ $json.questionnaire_status }}",
+										"rightValue": "rejected",
+										"operator": {
+											"type": "string",
+											"operation": "equals"
+										},
+										"id": "8df815dc-35d4-4412-8e40-3b43791c2d92"
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": " ❌Rejected"
+						},
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 3
+								},
+								"conditions": [
+									{
+										"id": "2dcfa8f1-d016-4429-9f77-dfff2abad4f6",
+										"leftValue": "={{ $json.questionnaire_status }}",
+										"rightValue": "accepted",
+										"operator": {
+											"type": "string",
+											"operation": "equals"
+										}
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "✅Accepted"
+						},
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 3
+								},
+								"conditions": [
+									{
+										"id": "08830c39-065d-43e3-abc5-60bf19310ff1",
+										"leftValue": "={{ $json.questionnaire_status }}",
+										"rightValue": "process",
+										"operator": {
+											"type": "string",
+											"operation": "equals"
+										}
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "➡️In Process"
+						},
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 3
+								},
+								"conditions": [
+									{
+										"id": "1322027d-d88a-453f-b291-ba57607c7304",
+										"leftValue": "={{ $json.questionnaire_status }}",
+										"rightValue": "none",
+										"operator": {
+											"type": "string",
+											"operation": "equals"
+										}
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "❓None"
+						},
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 3
+								},
+								"conditions": [
+									{
+										"id": "1acc3add-5c1f-4062-9748-38b32527883b",
+										"leftValue": "={{ $json.questionnaire_status }}",
+										"rightValue": "pending",
+										"operator": {
+											"type": "string",
+											"operation": "equals"
+										}
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "Pending"
+						}
+					]
+				},
+				"options": {}
+			},
+			"type": "n8n-nodes-base.switch",
+			"typeVersion": 3.4,
+			"position": [-784, -2848],
+			"id": "084e2f29-f52d-4a11-b49d-4f4be5d0a381",
+			"name": "Switch: Questionnaire Status"
+		},
+		{
+			"parameters": {
+				"assignments": {
+					"assignments": [
+						{
+							"id": "71e9ee65-4e57-46a4-a0e9-75e4eb591b09",
+							"name": "respuesta",
+							"value": "Entendido. Quedamos a tus órdenes por si decides retomarlo en el futuro. ¡Excelente día! 👋",
+							"type": "string"
+						}
+					]
+				},
+				"options": {}
+			},
+			"type": "n8n-nodes-base.set",
+			"typeVersion": 3.4,
+			"position": [464, -2416],
+			"id": "41c45f96-d718-4ce4-921b-1cbc751ad6b9",
+			"name": "Set: Despedida"
+		},
+		{
+			"parameters": {
+				"operation": "executeQuery",
+				"query": "UPDATE bot_users \nSET \n  bot_status = 'free', \n  questionnaire_status = 'rejected'\nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}';",
+				"options": {}
+			},
+			"type": "n8n-nodes-base.postgres",
+			"typeVersion": 2.6,
+			"position": [736, -2416],
+			"id": "46037ee9-8af5-4891-abc8-c77c031d52c8",
+			"name": "User Reject Q",
+			"credentials": {
+				"postgres": {
+					"id": "qyR2OAIR7tUEVcQf",
+					"name": "Postgres-neon"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+				"text": "={{ $('Set: Despedida').item.json.respuesta }}",
+				"additionalFields": {
+					"appendAttribution": false
+				}
+			},
+			"type": "n8n-nodes-base.telegram",
+			"typeVersion": 1.2,
+			"position": [992, -2416],
+			"id": "342ec9c0-74ed-44c6-8c40-4ac2a2f553b8",
+			"name": "Response: User Rejects Q",
+			"webhookId": "e4abe1d8-aba8-4cb5-b818-93f04f957253",
+			"credentials": {
+				"telegramApi": {
+					"id": "miuzXVpC7N3HQebh",
+					"name": "RAG BOT"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+				"text": "=Hola, noté que anteriormente preferiste no realizar la Evaluación de Perfil.\n\n¿Te gustaría cambiar de opinión y realizarla ahora mismo para avanzar con tu perfil? 🤝",
+				"additionalFields": {
+					"appendAttribution": false
+				}
+			},
+			"type": "n8n-nodes-base.telegram",
+			"typeVersion": 1.2,
+			"position": [-448, -3024],
+			"id": "ec4c24b9-b07f-472e-8038-60ef89fc2bbb",
+			"name": "Response: User change mind?",
+			"webhookId": "e4abe1d8-aba8-4cb5-b818-93f04f957253",
+			"credentials": {
+				"telegramApi": {
+					"id": "miuzXVpC7N3HQebh",
+					"name": "RAG BOT"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"operation": "executeQuery",
+				"query": "UPDATE bot_users \nSET \n  questionnaire_status = 'accepted',\n  bot_status = 'free'\nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}'\nRETURNING *;",
+				"options": {}
+			},
+			"type": "n8n-nodes-base.postgres",
+			"typeVersion": 2.6,
+			"position": [-240, -3024],
+			"id": "86d83bc3-2eda-4664-944e-7a7402ec144a",
+			"name": "Set Retry",
+			"credentials": {
+				"postgres": {
+					"id": "qyR2OAIR7tUEVcQf",
+					"name": "Postgres-neon"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"operation": "executeQuery",
+				"query": "UPDATE bot_users \nSET questionnaire_status = 'accepted' \nWHERE session_id = '{{ $('Telegram Trigger').first().json.message.chat.id }}'\nRETURNING *;",
+				"options": {}
+			},
+			"type": "n8n-nodes-base.postgres",
+			"typeVersion": 2.6,
+			"position": [464, -2608],
+			"id": "c2b45b1c-c64f-4b55-903e-5d1801f9d37a",
+			"name": "Set Status Accepted",
+			"credentials": {
+				"postgres": {
+					"id": "qyR2OAIR7tUEVcQf",
+					"name": "Postgres-neon"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"sessionIdType": "customKey",
+				"sessionKey": "={{ $json.session_id }}",
+				"tableName": "=n8n_chat_histories",
+				"contextWindowLength": 30
+			},
+			"type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+			"typeVersion": 1.3,
+			"position": [1232, -2592],
+			"id": "557490fd-0fe0-495a-8694-4bc91f514aa2",
+			"name": "Chat Memory2",
+			"credentials": {
+				"postgres": {
+					"id": "qyR2OAIR7tUEVcQf",
+					"name": "Postgres-neon"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"mode": "retrieve-as-tool",
+				"toolDescription": "Utiliza esta herramienta para buscar propiedades, casas, departamentos u oficinas en venta o renta. Úsala siempre que el usuario pregunte por disponibilidad, precios, características o ubicaciones.",
+				"tableName": "property_documents",
+				"options": {}
+			},
+			"type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+			"typeVersion": 1.3,
+			"position": [1408, -2592],
+			"id": "ae95cc61-7acd-479d-b705-840ba829fad5",
+			"name": "consultar_inmuebles",
+			"credentials": {
+				"postgres": {
+					"id": "qyR2OAIR7tUEVcQf",
+					"name": "Postgres-neon"
+				}
+			},
+			"disabled": true
+		},
+		{
+			"parameters": {
+				"model": {
+					"__rl": true,
+					"value": "gpt-5",
+					"mode": "list",
+					"cachedResultName": "gpt-5"
+				},
+				"builtInTools": {},
+				"options": {}
+			},
+			"type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+			"typeVersion": 1.3,
+			"position": [1072, -2592],
+			"id": "19fcb7fc-a88b-4d3b-9a01-81d7df6809d7",
+			"name": "OpenAI Chat Model2",
+			"credentials": {
+				"openAiApi": {
+					"id": "g8OPzRDvvB6YO7mf",
+					"name": "OpenAi account"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"promptType": "define",
+				"text": "={{ $('Telegram Trigger').first().json.message.text }}",
+				"options": {
+					"systemMessage": "=Eres el Perfilador Inmobiliario Inteligente de Villanueva García.\nEstás entrevistando a un cliente interesado en la propiedad con ID: {{ $json.property_id }}.\n\nTU OBJETIVO:\nDeterminar si el cliente es APTO para esta propiedad específica, basándote en los requisitos técnicos del inmueble.\n\nINSTRUCCIONES DE OPERACIÓN:\n\n1. **ANÁLISIS DE LA PROPIEDAD (Paso Cero - CRÍTICO):**\n   - Tu PRIMERA acción debe ser usar la herramienta \"consultar_inmuebles1\" para buscar: \"Ficha Técnica ID {{ $json.property_id }}\".\n   - De esa ficha extrae mentalmente: Precio, Mantenimiento, Mascotas (Si/No), Niños (Si/No), Tipo de Póliza, Uso (Habitacional/Comercial).\n\n2. **ENTREVISTA DINÁMICA (No seas un robot):**\n   - NO hagas todas las preguntas de golpe. Haz UNA a la vez.\n   - Basa tus preguntas en lo que encontraste en el RAG:\n     - Si la ficha dice \"No Mascotas\" -> Pregunta prioritariamente: \"¿Cuentas con alguna mascota?\".\n     - Si dice \"Pet Friendly\" -> Pregunta \"¿Qué mascota tienes y de qué tamaño?\".\n     - Si es Habitacional -> Pregunta número de habitantes y edades.\n     - Si pide Póliza Jurídica -> Pregunta si cuenta con Fiador/Aval o Obligado Solidario.\n     - Económico -> Pregunta si sus ingresos mensuales comprobables cubren 3 veces el valor de la renta (regla estándar).\n\n3. **REGLAS DE RECHAZO (Hard Filters):**\n   - Si el usuario viola una restricción explícita de la ficha (ej: Tiene 2 gatos y la ficha dice \"No Mascotas\"), debes detener la entrevista.\n   - Acción: \"rechazar_cuestionario\"\n   - Respuesta: Explica amablemente que la propiedad no admite esa característica específica y cierra la conversación.\n\n4. **FINALIZACIÓN (Aprobado):**\n   - Si has cubierto los puntos críticos (Dinero, Ocupantes, Mascotas, Garantía) y todo cuadra.\n   - Acción: \"transferir_humano\"\n   - Respuesta: \"¡Excelente! Cubres el perfil preliminar para esta propiedad. Te transferiré con un asesor para agendar tu visita.\"\n\nFORMATO JSON OBLIGATORIO:\n{\n  \"respuesta\": \"Texto para el usuario (tu siguiente pregunta o conclusión)\",\n  \"accion\": \"responder\" | \"transferir_humano\" | \"rechazar_cuestionario\"\n}"
+				}
+			},
+			"type": "@n8n/n8n-nodes-langchain.agent",
+			"typeVersion": 3,
+			"position": [1136, -2816],
+			"id": "646107fd-e313-4e19-8f4d-ca507d52daa7",
+			"name": "AI: Questionaire",
+			"retryOnFail": true,
+			"maxTries": 2,
+			"onError": "continueErrorOutput"
+		},
+		{
+			"parameters": {},
+			"type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+			"typeVersion": 1,
+			"position": [-240, -1504],
+			"id": "a2cbca9f-d335-4742-a962-54fc1e0404ba",
+			"name": "Embeddings Google Gemini",
+			"credentials": {
+				"googlePalmApi": {
+					"id": "3Qw3858fHslDYr4D",
+					"name": "Gemini - alfgow"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"promptType": "define",
+				"text": "={{ $json.message }}",
+				"options": {
+					"systemMessage": "=Eres un Clasificador de Intención Estricto.\nTu única misión es clasificar la intención del ÚLTIMO mensaje del usuario.\n\nANÁLISIS DE ENTRADA:\nAnaliza el mensaje. Si es una sola palabra o una frase corta de cortesía (ej: \"Hola\", \"Buenas\", \"Qué tal\"), TU OBLIGACIÓN es clasificarlo como \"greetings\", a menos que contenga un insulto.\n\nIntenciones permitidas (elige UNA):\n- greetings\n- property_inquiry\n- general_inquiry\n- misbehavior\n\nDEFINICIONES Y REGLAS (LEER EN ORDEN):\n\n1. misbehavior (PRIORIDAD MÁXIMA):\n   Contiene: Insultos, groserías, amenazas, acoso, odio o violencia.\n   Si detectas esto, DETENTE y clasifica como misbehavior.\n\n2. greetings (PRIORIDAD ALTA - REGLA DE ORO):\n   Aplica SI:\n   - El mensaje es SOLO un saludo (ej: \"Hola\", \"Buenas tardes\", \"Hello\").\n   - El mensaje es una frase coloquial de inicio (ej: \"Qué onda\", \"Qué tranza\", \"Hola buenas\").\n   - El usuario SOLO se presenta sin preguntar nada más todavía.\n   - Contiene emojis de saludo (👋).\n   **CRÍTICO:** Si el mensaje es \"Hola\" (o sus variantes) y NO tiene ninguna otra pregunta adjunta, ES GREETINGS. NO lo clasifiques como general_inquiry.\n\n3. property_inquiry:\n   Aplica SI el usuario menciona explícitamente:\n   - Intención de renta, venta, compra.\n   - Pólizas jurídicas, avales, requisitos.\n   - Costos, precios, ubicación, citas.\n   - \"Información\", \"Quiero saber más\", \"Me interesa\".\n\n4. general_inquiry (EL RESTO):\n   Aplica SOLO SI el usuario hace una pregunta o comentario ESPECÍFICO que no tiene nada que ver con inmobiliaria Y NO es un simple saludo.\n   Ejemplo: \"Dime la hora\", \"¿Quién ganó el partido?\", \"¿Cómo te llamas?\".\n   NOTA: \"Hola\" NUNCA es general_inquiry.\n\nREGLA DEL CAMPO message:\n- Si intention != misbehavior → message = null\n- Si intention = misbehavior → message = \"Usuario bloqueado por faltas de respeto.\"\n\nSALIDA JSON (Únicamente este bloque):\n[\n  {\n    \"intention\": \"greetings | general_inquiry | property_inquiry | misbehavior\",\n    \"message\": null | \"string\"\n  }\n]"
+				}
+			},
+			"type": "@n8n/n8n-nodes-langchain.agent",
+			"typeVersion": 3,
+			"position": [-4032, -2480],
+			"id": "0e4dbc88-d948-47da-aa1f-0dd86db4b434",
+			"name": "AI Agent"
+		},
+		{
+			"parameters": {
+				"model": {
+					"__rl": true,
+					"value": "gpt-5-nano",
+					"mode": "list",
+					"cachedResultName": "gpt-5-nano"
+				},
+				"builtInTools": {},
+				"options": {}
+			},
+			"type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+			"typeVersion": 1.3,
+			"position": [-4080, -2304],
+			"id": "42648c58-37a8-490d-af79-dc9906d6a7ff",
+			"name": "OpenAI Chat Model3",
+			"credentials": {
+				"openAiApi": {
+					"id": "g8OPzRDvvB6YO7mf",
+					"name": "OpenAi account"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"jsCode": "// n8n Code Node - Clean AI JSON output\n\nconst cleanedItems = [];\n\nfor (const item of items) {\n  let rawOutput = item.json.output;\n\n  // Si no hay output, pasa el item tal cual\n  if (!rawOutput) {\n    cleanedItems.push(item);\n    continue;\n  }\n\n  // Si viene como string (JSON stringificado)\n  if (typeof rawOutput === 'string') {\n    try {\n      // Parsear el JSON interno\n      const parsed = JSON.parse(rawOutput);\n\n      // Si es un arreglo, normalizamos cada objeto\n      if (Array.isArray(parsed)) {\n        for (const obj of parsed) {\n          cleanedItems.push({\n            json: normalizeNulls(obj),\n          });\n        }\n      } else {\n        cleanedItems.push({\n          json: normalizeNulls(parsed),\n        });\n      }\n\n    } catch (error) {\n      // Si falla el parseo, devolvemos el original para debug\n      cleanedItems.push({\n        json: {\n          error: 'JSON_PARSE_ERROR',\n          original_output: rawOutput,\n        },\n      });\n    }\n  } else {\n    // Si ya es objeto, solo normalizamos\n    cleanedItems.push({\n      json: normalizeNulls(rawOutput),\n    });\n  }\n}\n\n// Función para convertir \"null\" (string) a null real\nfunction normalizeNulls(obj) {\n  if (Array.isArray(obj)) {\n    return obj.map(normalizeNulls);\n  }\n\n  if (obj !== null && typeof obj === 'object') {\n    const clean = {};\n    for (const [key, value] of Object.entries(obj)) {\n      if (value === 'null') {\n        clean[key] = null;\n      } else {\n        clean[key] = normalizeNulls(value);\n      }\n    }\n    return clean;\n  }\n\n  return obj;\n}\n\nreturn cleanedItems;\n"
+			},
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [-3488, -2480],
+			"id": "c0003fd3-2de4-4eca-ac4e-6966e939c159",
+			"name": "AI Cleaner"
+		},
+		{
+			"parameters": {
+				"rules": {
+					"values": [
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 3
+								},
+								"conditions": [
+									{
+										"leftValue": "={{ $json.intention }}",
+										"rightValue": "general_inqury",
+										"operator": {
+											"type": "string",
+											"operation": "equals"
+										},
+										"id": "7962a48e-b647-4614-96ad-0152df1b8c4f"
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "Out of context"
+						},
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 3
+								},
+								"conditions": [
+									{
+										"id": "f8d0b12b-fe73-4adc-8871-31bbd3f1db61",
+										"leftValue": "={{ $json.intention }}",
+										"rightValue": "greetings",
+										"operator": {
+											"type": "string",
+											"operation": "equals",
+											"name": "filter.operator.equals"
+										}
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "Grettings"
+						},
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 3
+								},
+								"conditions": [
+									{
+										"id": "e1cc8049-531d-4cc2-b5f9-f8333bbf4966",
+										"leftValue": "={{ $json.intention }}",
+										"rightValue": "property_inqury",
+										"operator": {
+											"type": "string",
+											"operation": "equals",
+											"name": "filter.operator.equals"
+										}
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "Property Inq"
+						},
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 3
+								},
+								"conditions": [
+									{
+										"id": "27420269-31b7-41e4-ac08-37bed49e3ec2",
+										"leftValue": "={{ $json.intention }}",
+										"rightValue": "misbehavior",
+										"operator": {
+											"type": "string",
+											"operation": "equals",
+											"name": "filter.operator.equals"
+										}
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "🤬 Misbehavior"
+						}
+					]
+				},
+				"options": {}
+			},
+			"type": "n8n-nodes-base.switch",
+			"typeVersion": 3.4,
+			"position": [-3104, -2576],
+			"id": "82b24097-fd3e-44e0-ae0f-84dd6cbd45b2",
+			"name": "Switch1"
+		},
+		{
+			"parameters": {
+				"promptType": "define",
+				"text": "={{ $json.intention }}",
+				"options": {
+					"systemMessage": "=Eres el Asistente Virtual de Inmobiliaria Villanueva García.\n\nCONTEXTO:\n- El contacto envió el mensaje: \"{{ $json.message }}\"\n- El bot solo puede atender temas inmobiliarios.\n- Estado actual del contacto:\n  - Nombre: {{ $json.nombre }}\n  - Teléfono: {{ $json.telefono_real }}\n  - Rol: {{ $json.rol }}\n  - Estatus del bot: {{ $json.bot_status }}\n  - Estatus del cuestionario: {{ $json.questionnaire_status }}\n\nREGLAS:\n1. Si el mensaje NO está relacionado con temas inmobiliarios, NO respondas la pregunta solicitada.\n2. Explica brevemente que solo puedes ayudar con temas inmobiliarios de Inmobiliaria Villanueva García.\n3. Retoma el proceso pendiente con el contacto según su estado:\n   - Si falta el nombre → solicita el nombre completo.\n   - Si falta el teléfono → solicita el teléfono.\n   - Si el proceso está incompleto → invita a continuar.\n4. Usa un tono cordial, profesional y claro.\n5. NO hagas preguntas abiertas que salgan del flujo.\n5.1 NO Agradezcas por escribir\n6. NO inventes información previa: solo referencia datos que estén claramente pendientes.\n7. La respuesta debe ser un solo mensaje, corto y natural, como lo haría un asesor humano.\n\nFORMATO DE SALIDA:\nSolo texto plano, sin listas, sin emojis, sin explicaciones técnicas.\n"
+				}
+			},
+			"type": "@n8n/n8n-nodes-langchain.agent",
+			"typeVersion": 3,
+			"position": [-3120, -3040],
+			"id": "8b50b92d-c748-4599-96b7-ea4694bc811f",
+			"name": "AI Agent1"
+		},
+		{
+			"parameters": {
+				"sessionIdType": "customKey",
+				"sessionKey": "={{ $json.session_id }}",
+				"tableName": "=n8n_chat_histories",
+				"contextWindowLength": 30
+			},
+			"type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+			"typeVersion": 1.3,
+			"position": [-528, -1664],
+			"id": "a8322ffd-bac8-49b8-81fe-6c08b7c7587d",
+			"name": "Chat Memory1",
+			"credentials": {
+				"postgres": {
+					"id": "qyR2OAIR7tUEVcQf",
+					"name": "Postgres-neon"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"sessionIdType": "customKey",
+				"sessionKey": "={{ $('Call \\'Processing Incoming Message 2.0\\'').item.json.session_id }}"
+			},
+			"type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+			"typeVersion": 1.3,
+			"position": [-3904, -2304],
+			"id": "e36cbd70-d182-43f1-9a3b-63b6f1bfaecc",
+			"name": "Postgres Chat Memory",
+			"credentials": {
+				"postgres": {
+					"id": "qyR2OAIR7tUEVcQf",
+					"name": "Postgres-neon"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"model": {
+					"__rl": true,
+					"value": "gpt-5-nano",
+					"mode": "list",
+					"cachedResultName": "gpt-5-nano"
+				},
+				"builtInTools": {},
+				"options": {}
+			},
+			"type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+			"typeVersion": 1.3,
+			"position": [-3072, -2768],
+			"id": "25123e1d-db37-43bf-80af-5cb9a00c14a1",
+			"name": "OpenAI Chat Model4",
+			"credentials": {
+				"openAiApi": {
+					"id": "g8OPzRDvvB6YO7mf",
+					"name": "OpenAi account"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"sessionIdType": "customKey",
+				"sessionKey": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}"
+			},
+			"type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+			"typeVersion": 1.3,
+			"position": [-2896, -2768],
+			"id": "bac7e566-5e88-4896-bc63-371d0485b3a0",
+			"name": "Postgres Chat Memory1",
+			"credentials": {
+				"postgres": {
+					"id": "qyR2OAIR7tUEVcQf",
+					"name": "Postgres-neon"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"updates": ["messages"],
+				"options": {}
+			},
+			"type": "n8n-nodes-base.whatsAppTrigger",
+			"typeVersion": 1,
+			"position": [-5056, -1120],
+			"id": "7e336f0d-6bc5-42d9-9107-bc1855089886",
+			"name": "WhatsApp Trigger",
+			"webhookId": "ff2ad0f4-dbe5-4bda-b227-daa831c3f0aa",
+			"credentials": {
+				"whatsAppTriggerApi": {
+					"id": "wNm2E0BXIo1ncj15",
+					"name": "WhatsApp Testing - Poncho"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"resource": "media",
+				"operation": "mediaUrlGet",
+				"mediaGetId": "={{ $json.messages[0].audio.id }}"
+			},
+			"type": "n8n-nodes-base.whatsApp",
+			"typeVersion": 1.1,
+			"position": [-5136, -2448],
+			"id": "cef3e8ee-b51f-458d-b010-648bca987625",
+			"name": "Download media",
+			"webhookId": "71cceeae-178f-4849-9dfd-31be331ae2e5",
+			"credentials": {
+				"whatsAppApi": {
+					"id": "s0OzaeWmw3lzqhNG",
+					"name": "WhatsApp - testing v2"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"url": "={{ $json.url }}",
+				"authentication": "genericCredentialType",
+				"genericAuthType": "httpBearerAuth",
+				"options": {}
+			},
+			"type": "n8n-nodes-base.httpRequest",
+			"typeVersion": 4.2,
+			"position": [-4896, -2448],
+			"id": "6e00de38-c56f-450c-b49d-6090eece2214",
+			"name": "Get Audio",
+			"credentials": {
+				"httpBearerAuth": {
+					"id": "QigdAtAlBxHMmIsD",
+					"name": "WA - Bearer Token"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"resource": "audio",
+				"operation": "transcribe",
+				"options": {}
+			},
+			"type": "@n8n/n8n-nodes-langchain.openAi",
+			"typeVersion": 2.1,
+			"position": [-4640, -2448],
+			"id": "c500c1bb-687f-43e5-92b3-069a6e491a7c",
+			"name": "Transcribe a recording",
+			"credentials": {
+				"openAiApi": {
+					"id": "g8OPzRDvvB6YO7mf",
+					"name": "OpenAi account"
+				}
+			}
+		},
+		{
+			"parameters": {
+				"rules": {
+					"values": [
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 2
+								},
+								"conditions": [
+									{
+										"leftValue": "={{ $json.messages[0].text.body }}",
+										"rightValue": "",
+										"operator": {
+											"type": "string",
+											"operation": "exists",
+											"singleValue": true
+										},
+										"id": "b564c529-0a34-48cf-beaf-0004336706ef"
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "text-message"
+						},
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 2
+								},
+								"conditions": [
+									{
+										"id": "250baf65-d4ac-41ab-a455-eb87a917a514",
+										"leftValue": "={{ $json.messages[0].image }}",
+										"rightValue": "",
+										"operator": {
+											"type": "object",
+											"operation": "exists",
+											"singleValue": true
+										}
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "image-message"
+						},
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 2
+								},
+								"conditions": [
+									{
+										"id": "f498642e-1494-490b-9d2e-1b64ed1c2c2c",
+										"leftValue": "={{ $json.messages[0].button.text }}",
+										"rightValue": "Si, quiero más info",
+										"operator": {
+											"type": "string",
+											"operation": "equals",
+											"name": "filter.operator.equals"
+										}
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "BTN si"
+						},
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 2
+								},
+								"conditions": [
+									{
+										"id": "bf6ad2e8-fe57-43c2-8f6e-1b3381f0dcff",
+										"leftValue": "={{ $json.messages[0].document.mime_type }}",
+										"rightValue": "image/",
+										"operator": {
+											"type": "string",
+											"operation": "contains"
+										}
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "document-image"
+						},
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 2
+								},
+								"conditions": [
+									{
+										"id": "ad353bff-2299-4372-a4ea-1feadb00dab2",
+										"leftValue": "={{ $json.messages[0].document.mime_type }}",
+										"rightValue": "application/",
+										"operator": {
+											"type": "string",
+											"operation": "contains"
+										}
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "pdf"
+						},
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 2
+								},
+								"conditions": [
+									{
+										"id": "9c8d220b-1791-4273-bb74-08b2b3f7f319",
+										"leftValue": "={{ $json.messages[0].audio }}",
+										"rightValue": "",
+										"operator": {
+											"type": "object",
+											"operation": "exists",
+											"singleValue": true
+										}
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "audio-message"
+						},
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 2
+								},
+								"conditions": [
+									{
+										"id": "8128736a-b8de-4776-bf65-bee38faaba50",
+										"leftValue": "={{ $json.messages[0].type }}",
+										"rightValue": "sticker",
+										"operator": {
+											"type": "string",
+											"operation": "equals",
+											"name": "filter.operator.equals"
+										}
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "Sticker"
+						},
+						{
+							"conditions": {
+								"options": {
+									"caseSensitive": true,
+									"leftValue": "",
+									"typeValidation": "strict",
+									"version": 2
+								},
+								"conditions": [
+									{
+										"id": "9779523b-c292-4396-aac3-b9f2c28e49d8",
+										"leftValue": "={{ $json.messages[0].button.text }}",
+										"rightValue": "No, gracias",
+										"operator": {
+											"type": "string",
+											"operation": "equals",
+											"name": "filter.operator.equals"
+										}
+									}
+								],
+								"combinator": "and"
+							},
+							"renameOutput": true,
+							"outputKey": "BTN No"
+						}
+					]
+				},
+				"options": {}
+			},
+			"type": "n8n-nodes-base.switch",
+			"typeVersion": 3.3,
+			"position": [-4768, -1232],
+			"id": "4243a6a0-c945-463a-b8b2-e2efaaf48a4f",
+			"name": "Switch Type Of Message",
+			"onError": "continueErrorOutput"
+		},
+		{
+			"parameters": {
+				"workflowId": {
+					"__rl": true,
+					"value": "Qc11Wg3DiEqaN9GN",
+					"mode": "list",
+					"cachedResultUrl": "/workflow/Qc11Wg3DiEqaN9GN",
+					"cachedResultName": "Processing Incoming Message 2.0"
+				},
+				"workflowInputs": {
+					"mappingMode": "defineBelow",
+					"value": {
+						"wa_id": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+						"name": "={{ $('WhatsApp Trigger').item.json.contacts[0].profile.name }}",
+						"message": "={{ $('WhatsApp Trigger').item.json.messages[0].text.body }}"
+					},
+					"matchingColumns": [],
+					"schema": [
+						{
+							"id": "wa_id",
+							"displayName": "wa_id",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"canBeUsedToMatch": true,
+							"type": "string",
+							"removed": false
+						},
+						{
+							"id": "name",
+							"displayName": "name",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"canBeUsedToMatch": true,
+							"type": "string",
+							"removed": false
+						},
+						{
+							"id": "message",
+							"displayName": "message",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"canBeUsedToMatch": true,
+							"type": "string",
+							"removed": false
+						}
+					],
+					"attemptToConvertTypes": false,
+					"convertFieldsToString": true
+				},
+				"options": {}
+			},
+			"type": "n8n-nodes-base.executeWorkflow",
+			"typeVersion": 1.3,
+			"position": [-4384, -1248],
+			"id": "0581d85b-9adf-4b8b-8e71-faa88c8b1051",
+			"name": "Call 'Processing Incoming Message 2.0'"
+		},
+		{
+			"parameters": {
+				"workflowId": {
+					"__rl": true,
+					"value": "JN2MAz79dRGE2RqZ",
+					"mode": "list",
+					"cachedResultUrl": "/workflow/JN2MAz79dRGE2RqZ",
+					"cachedResultName": "NewsFlows"
+				},
+				"workflowInputs": {
+					"mappingMode": "defineBelow",
+					"value": {
+						"api_contact_id": "={{ $json.api_contact_id }}",
+						"rejected_count": "={{ $json.rejected_count }}",
+						"count_outcontext": "={{ $json.count_outcontext }}",
+						"session_id": "={{ $json.session_id }}",
+						"status": "={{ $json.status }}",
+						"nombre": "={{ $json.nombre }}",
+						"telefono_real": "={{ $json.telefono_real }}",
+						"bot_status": "={{ $json.bot_status }}",
+						"questionnaire_status": "={{ $json.questionnaire_status }}",
+						"property_id": "={{ $json.property_id }}",
+						"message": "={{ $json.message }}"
+					},
+					"matchingColumns": [],
+					"schema": [
+						{
+							"id": "session_id",
+							"displayName": "session_id",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"canBeUsedToMatch": true,
+							"type": "string",
+							"removed": false
+						},
+						{
+							"id": "status",
+							"displayName": "status",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"canBeUsedToMatch": true,
+							"type": "string",
+							"removed": false
+						},
+						{
+							"id": "api_contact_id",
+							"displayName": "api_contact_id",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"canBeUsedToMatch": true,
+							"type": "number",
+							"removed": false
+						},
+						{
+							"id": "nombre",
+							"displayName": "nombre",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"canBeUsedToMatch": true,
+							"type": "string",
+							"removed": false
+						},
+						{
+							"id": "telefono_real",
+							"displayName": "telefono_real",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"canBeUsedToMatch": true,
+							"type": "string",
+							"removed": false
+						},
+						{
+							"id": "bot_status",
+							"displayName": "bot_status",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"canBeUsedToMatch": true,
+							"type": "string",
+							"removed": false
+						},
+						{
+							"id": "rejected_count",
+							"displayName": "rejected_count",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"canBeUsedToMatch": true,
+							"type": "number",
+							"removed": false
+						},
+						{
+							"id": "questionnaire_status",
+							"displayName": "questionnaire_status",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"canBeUsedToMatch": true,
+							"type": "string",
+							"removed": false
+						},
+						{
+							"id": "property_id",
+							"displayName": "property_id",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"canBeUsedToMatch": true,
+							"type": "string",
+							"removed": false
+						},
+						{
+							"id": "count_outcontext",
+							"displayName": "count_outcontext",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"canBeUsedToMatch": true,
+							"type": "number",
+							"removed": false
+						},
+						{
+							"id": "message",
+							"displayName": "message",
+							"required": false,
+							"defaultMatch": false,
+							"display": true,
+							"canBeUsedToMatch": true,
+							"type": "string",
+							"removed": false
+						}
+					],
+					"attemptToConvertTypes": false,
+					"convertFieldsToString": true
+				},
+				"options": {}
+			},
+			"type": "n8n-nodes-base.executeWorkflow",
+			"typeVersion": 1.3,
+			"position": [-3824, -1232],
+			"id": "9e9df682-4d1e-4010-8e82-29e4a832dfd1",
+			"name": "Call 'NewsFlows'"
+		}
+	],
+	"pinData": {
+		"AI Cleaner": [
+			{
+				"json": {
+					"intention": "misbehavior",
+					"message": "Este canal requiere comunicación respetuosa. Debido al uso de lenguaje inapropiado, tu acceso será bloqueado."
+				},
+				"pairedItem": {
+					"item": 0
+				}
+			}
+		],
+		"Call 'Processing Incoming Message 2.0'": [
+			{
+				"json": {
+					"session_id": "5215559177781",
+					"status": "new",
+					"api_contact_id": 934,
+					"nombre": "🤖2.0 - alfgow",
+					"telefono_real": null,
+					"bot_status": "processing",
+					"rejected_count": 0,
+					"questionnaire_status": "none",
+					"property_id": null,
+					"count_outcontext": 0,
+					"message": "Hola"
+				},
+				"pairedItem": {
+					"item": 0
+				}
+			}
+		]
+	},
+	"connections": {
+		"Switch: Actual status": {
+			"main": [
+				[],
+				[],
+				[],
+				[
+					{
+						"node": "Call 'NewsFlows'",
+						"type": "main",
+						"index": 0
+					}
+				],
+				[],
+				[]
+			]
+		},
+		"consultar_inmuebles1": {
+			"ai_tool": [
+				[
+					{
+						"node": "AI: Buscador",
+						"type": "ai_tool",
+						"index": 0
+					}
+				]
+			]
+		},
+		"AI: Buscador": {
+			"main": [
+				[
+					{
+						"node": "AI Cleaner - Buscador",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Response Message": {
+			"main": [[]]
+		},
+		"Switch": {
+			"main": [
+				[
+					{
+						"node": "API - Add Property Interest",
+						"type": "main",
+						"index": 0
+					}
+				],
+				[
+					{
+						"node": "Reponder: Buscador",
+						"type": "main",
+						"index": 0
+					}
+				],
+				[
+					{
+						"node": "Guardar Veto Postgress1",
+						"type": "main",
+						"index": 0
+					}
+				],
+				[]
+			]
+		},
+		"AI Cleaner - Buscador": {
+			"main": [
+				[
+					{
+						"node": "Switch",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Guardar Veto Postgress1": {
+			"main": [
+				[
+					{
+						"node": "Reject Chat1",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Reject Chat1": {
+			"main": [
+				[
+					{
+						"node": "AI: Generate Reject Message1",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"API: Add Comment": {
+			"main": [
+				[
+					{
+						"node": "SET: Rejected Status2",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"GET: Chat Histories1": {
+			"ai_tool": [
+				[
+					{
+						"node": "AI: Generate Reject Message1",
+						"type": "ai_tool",
+						"index": 0
+					}
+				]
+			]
+		},
+		"SET: Rejected Status2": {
+			"main": [
+				[
+					{
+						"node": "SET: BOT FREE1",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Incrementar Contador y Bloquear": {
+			"main": [
+				[
+					{
+						"node": "If: Block Limit Reached?",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"If: Block Limit Reached?": {
+			"main": [
+				[
+					{
+						"node": "SET: Blocked1",
+						"type": "main",
+						"index": 0
+					}
+				],
+				[
+					{
+						"node": "Message a model2",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"SET: Blocked1": {
+			"main": [
+				[
+					{
+						"node": "SET: Blocked Status2",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"SET: Blocked Status2": {
+			"main": [
+				[
+					{
+						"node": "API: Add Comment2",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"API: Add Comment2": {
+			"main": [
+				[
+					{
+						"node": "Send a text message1",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Message a model2": {
+			"main": [
+				[
+					{
+						"node": "Reject Chat2",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Reject Chat2": {
+			"main": [
+				[
+					{
+						"node": "SET: BOT FREE",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Send a text message1": {
+			"main": [
+				[
+					{
+						"node": "SET: BOT FREE",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"OpenAI Chat Model1": {
+			"ai_languageModel": [
+				[
+					{
+						"node": "AI: Buscador",
+						"type": "ai_languageModel",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Reponder: Buscador": {
+			"main": [
+				[
+					{
+						"node": "SET: BOT FREE1",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Reponder: Questionaire": {
+			"main": [
+				[
+					{
+						"node": "SET prospecting status1",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"SET prospecting status1": {
+			"main": [
+				[
+					{
+						"node": "SET: BOT FREE1",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"API - Add Property Interest": {
+			"main": [
+				[
+					{
+						"node": "Reponder: Questionaire",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"AI: Generate Reject Message1": {
+			"main": [
+				[
+					{
+						"node": "API: Add Comment",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"AI: Agree w Questionaire?": {
+			"main": [
+				[
+					{
+						"node": "Parse Response Boolean",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Parse Response Boolean": {
+			"main": [
+				[
+					{
+						"node": "If: Agree?",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Switch: Questionnaire Status": {
+			"main": [
+				[
+					{
+						"node": "Response: User change mind?",
+						"type": "main",
+						"index": 0
+					}
+				],
+				[],
+				[],
+				[
+					{
+						"node": "AI: Agree w Questionaire?",
+						"type": "main",
+						"index": 0
+					}
+				],
+				[
+					{
+						"node": "AI: Agree w Questionaire?",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"If: Agree?": {
+			"main": [
+				[
+					{
+						"node": "Set Status Accepted",
+						"type": "main",
+						"index": 0
+					}
+				],
+				[
+					{
+						"node": "Set: Despedida",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Set: Despedida": {
+			"main": [
+				[
+					{
+						"node": "User Reject Q",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"User Reject Q": {
+			"main": [
+				[
+					{
+						"node": "Response: User Rejects Q",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Response: User change mind?": {
+			"main": [
+				[
+					{
+						"node": "Set Retry",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Chat Memory2": {
+			"ai_memory": [
+				[
+					{
+						"node": "AI: Questionaire",
+						"type": "ai_memory",
+						"index": 0
+					}
+				]
+			]
+		},
+		"consultar_inmuebles": {
+			"ai_tool": [
+				[
+					{
+						"node": "AI: Questionaire",
+						"type": "ai_tool",
+						"index": 0
+					}
+				]
+			]
+		},
+		"OpenAI Chat Model2": {
+			"ai_languageModel": [
+				[
+					{
+						"node": "AI: Questionaire",
+						"type": "ai_languageModel",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Set Status Accepted": {
+			"main": [
+				[
+					{
+						"node": "AI: Questionaire",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Embeddings Google Gemini": {
+			"ai_embedding": [
+				[
+					{
+						"node": "consultar_inmuebles1",
+						"type": "ai_embedding",
+						"index": 0
+					}
+				]
+			]
+		},
+		"AI Agent": {
+			"main": [[]]
+		},
+		"OpenAI Chat Model3": {
+			"ai_languageModel": [
+				[
+					{
+						"node": "AI Agent",
+						"type": "ai_languageModel",
+						"index": 0
+					}
+				]
+			]
+		},
+		"AI Cleaner": {
+			"main": [
+				[
+					{
+						"node": "Switch1",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Switch1": {
+			"main": [
+				[
+					{
+						"node": "AI Agent1",
+						"type": "main",
+						"index": 0
+					}
+				],
+				[],
+				[],
+				[]
+			]
+		},
+		"Chat Memory1": {
+			"ai_memory": [
+				[
+					{
+						"node": "AI: Buscador",
+						"type": "ai_memory",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Postgres Chat Memory": {
+			"ai_memory": [
+				[
+					{
+						"node": "AI Agent",
+						"type": "ai_memory",
+						"index": 0
+					}
+				]
+			]
+		},
+		"OpenAI Chat Model4": {
+			"ai_languageModel": [
+				[
+					{
+						"node": "AI Agent1",
+						"type": "ai_languageModel",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Postgres Chat Memory1": {
+			"ai_memory": [
+				[
+					{
+						"node": "AI Agent1",
+						"type": "ai_memory",
+						"index": 0
+					}
+				]
+			]
+		},
+		"WhatsApp Trigger": {
+			"main": [
+				[
+					{
+						"node": "Switch Type Of Message",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Download media": {
+			"main": [
+				[
+					{
+						"node": "Get Audio",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Get Audio": {
+			"main": [
+				[
+					{
+						"node": "Transcribe a recording",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Transcribe a recording": {
+			"main": [[]]
+		},
+		"Switch Type Of Message": {
+			"main": [
+				[
+					{
+						"node": "Call 'Processing Incoming Message 2.0'",
+						"type": "main",
+						"index": 0
+					}
+				],
+				[],
+				[],
+				[],
+				[],
+				[]
+			]
+		},
+		"Call 'Processing Incoming Message 2.0'": {
+			"main": [
+				[
+					{
+						"node": "Switch: Actual status",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		}
+	},
+	"active": true,
+	"settings": {
+		"executionOrder": "v1"
+	},
+	"versionId": "53a4280c-8544-4773-829d-8ee90deec506",
+	"meta": {
+		"templateCredsSetupCompleted": true,
+		"instanceId": "37571b6e3b06c0ce894d50931b94c0b80b70f40d5b859a8ce717ce6c0e3d4b9d"
+	},
+	"id": "a3TXAT4vVMapyxIL",
+	"tags": []
+}
