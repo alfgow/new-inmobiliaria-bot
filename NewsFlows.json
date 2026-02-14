@@ -1398,17 +1398,6 @@
         ]
       ]
     },
-    "Query de Actualización Inteligente": {
-      "main": [
-        [
-          {
-            "node": "Switch: Block or Continue",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "AI: Recepcionista": {
       "main": [
         [
@@ -1510,7 +1499,13 @@
     },
     "AI Cleaner - Recepcionista": {
       "main": [
-        []
+        [
+          {
+            "node": "Switch: Block or Continue",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "AI: Generate Reject Message": {
@@ -1528,7 +1523,7 @@
       "main": [
         [
           {
-            "node": "Clasificador de Intención",
+            "node": "AI: Recepcionista",
             "type": "main",
             "index": 0
           }
@@ -1574,33 +1569,6 @@
             "index": 0
           }
         ]
-      ]
-    },
-    "Clasificador de Intención": {
-      "main": [
-        [
-          {
-            "node": "AI Cleaner",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "AI Cleaner": {
-      "main": [
-        [
-          {
-            "node": "Execute a SQL query",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Switch Intención": {
-      "main": [
-        []
       ]
     },
     "Execute a SQL query": {
