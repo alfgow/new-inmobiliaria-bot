@@ -61,7 +61,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Normalizamos diferentes formatos de respuesta (lista directa o envuelta en data)\nconst rawItems = $input.all();\n\nconst normalizedMessages = rawItems.flatMap((item) => {\n  if (item?.json?.message) return [item.json];\n\n  if (Array.isArray(item?.json?.data)) {\n    return item.json.data.filter((entry) => entry && entry.message);\n  }\n\n  return [];\n});\n\n// Orden cronológico\nconst items = normalizedMessages.reverse();\n\nlet reporte = \"🚨 REPORTE DE BLOQUEO - ÚLTIMAS INTERACCIONES 🚨\\n\\n\";\n\nfor (const item of items) {\n  const msg = item.message || {};\n\n  let actor = \"Desconocido\";\n  if (msg.type === 'human') actor = \"Usuario\";\n  else if (msg.type === 'ai') actor = \"Bot\";\n\n  let texto = msg.content || (msg.data && msg.data.content) || \"Sin texto\";\n\n  if (actor === \"Bot\" && typeof texto === 'string' && texto.includes(\"{\")) {\n    try {\n      const inicio = texto.indexOf('{');\n      const fin = texto.lastIndexOf('}') + 1;\n\n      if (inicio !== -1 && fin !== -1) {\n        const jsonStr = texto.substring(inicio, fin);\n        const objeto = JSON.parse(jsonStr);\n\n        if (objeto.respuesta) texto = objeto.respuesta;\n      }\n    } catch (e) {\n      // Si falla el parseo, dejamos el texto original\n    }\n  }\n\n  reporte += `🔴 ${actor}: ${texto}\\n`;\n}\n\nreturn {\n  json: {\n    reporte_final: reporte\n  }\n};"
+        "jsCode": "const normalizedMessages = Array.isArray($json.chat_histories) ? $json.chat_histories : [];\n\n// Orden cronológico\nconst items = [...normalizedMessages].reverse();\n\nlet reporte = \"🚨 REPORTE DE BLOQUEO - ÚLTIMAS INTERACCIONES 🚨\\n\\n\";\n\nfor (const item of items) {\n  const msg = item.message || {};\n\n  let actor = \"Desconocido\";\n  if (msg.type === 'human') actor = \"Usuario\";\n  else if (msg.type === 'ai') actor = \"Bot\";\n\n  let texto = msg.content || (msg.data && msg.data.content) || \"Sin texto\";\n\n  if (actor === \"Bot\" && typeof texto === 'string' && texto.includes(\"{\")) {\n    try {\n      const inicio = texto.indexOf('{');\n      const fin = texto.lastIndexOf('}') + 1;\n\n      if (inicio !== -1 && fin !== -1) {\n        const jsonStr = texto.substring(inicio, fin);\n        const objeto = JSON.parse(jsonStr);\n\n        if (objeto.respuesta) texto = objeto.respuesta;\n      }\n    } catch (e) {\n      // Si falla el parseo, dejamos el texto original\n    }\n  }\n\n  reporte += `🔴 ${actor}: ${texto}\\n`;\n}\n\nreturn {\n  json: {\n    reporte_final: reporte\n  }\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -76,7 +76,7 @@
       "parameters": {
         "url": "=https://crm.g210512.com/api/chat-histories/session/{{ $json.session_id }}?order=desc&limit=10",
         "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "genericAuthType": "httpBearerAuth",
         "options": {},
         "method": "GET"
       },
@@ -89,7 +89,7 @@
       "id": "17c470ce-ea8e-42d4-bf7d-14333baaabcf",
       "name": "Get Story Chat",
       "credentials": {
-        "httpHeaderAuth": {
+        "httpBearerAuth": {
           "id": "rzmCtJN8Vtwv6AO3",
           "name": "API Key Inmuebles"
         }
@@ -432,7 +432,7 @@
       "parameters": {
         "url": "=https://crm.g210512.com/api/chat-histories/session/{{ $('When Executed by Another Workflow').first().json.session_id }}?order=desc&limit=10",
         "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "genericAuthType": "httpBearerAuth",
         "options": {},
         "method": "GET"
       },
@@ -445,7 +445,7 @@
       "id": "cccfbfd2-83af-4498-91fc-2680ca3cbd45",
       "name": "GET: Chat Histories",
       "credentials": {
-        "httpHeaderAuth": {
+        "httpBearerAuth": {
           "id": "rzmCtJN8Vtwv6AO3",
           "name": "API Key Inmuebles"
         }
@@ -1174,7 +1174,7 @@
       "parameters": {
         "url": "=https://crm.g210512.com/api/chat-histories/session/{{ $('When Executed by Another Workflow').first().json.session_id }}?order=asc&limit=200&page=1",
         "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "genericAuthType": "httpBearerAuth",
         "options": {},
         "method": "GET"
       },
@@ -1187,7 +1187,7 @@
       "id": "75b59c59-f67b-482e-aa4d-921b5ab540f5",
       "name": "GET: Chat Histories (Wide Context)",
       "credentials": {
-        "httpHeaderAuth": {
+        "httpBearerAuth": {
           "id": "rzmCtJN8Vtwv6AO3",
           "name": "API Key Inmuebles"
         }
@@ -1205,6 +1205,29 @@
       ],
       "id": "ac87061c-c441-4972-a51c-9364af95c1da",
       "name": "Code: Concat Chat Pages"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cd5160f0-41bc-43a2-9aae-38e159cf97de",
+              "name": "chat_histories",
+              "value": "={{ Array.isArray($json.data) ? $json.data : (Array.isArray($json) ? $json : []) }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1984,
+        -256
+      ],
+      "id": "1ea15a66-d0bf-481d-a2f2-d1cc3bfaf3c4",
+      "name": "Set: Chat Histories Shape"
     }
   ],
   "pinData": {
@@ -1314,7 +1337,7 @@
       "main": [
         [
           {
-            "node": "Formatear Conversacion",
+            "node": "Set: Chat Histories Shape",
             "type": "main",
             "index": 0
           }
@@ -1585,6 +1608,17 @@
         [
           {
             "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set: Chat Histories Shape": {
+      "main": [
+        [
+          {
+            "node": "Formatear Conversacion",
             "type": "main",
             "index": 0
           }
