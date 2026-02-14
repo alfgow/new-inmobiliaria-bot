@@ -506,7 +506,7 @@
     },
     {
       "parameters": {
-        "url": "=https://crm.g210512.com/api/chat-histories/session/{{ $(\"Call 'Processing Incoming Message 2.0'\").item.json.session_id }}?order=asc&limit=200&page=1",
+        "url": "=https://crm.g210512.com/api/chat-histories/session/{{ $(\"Call 'Processing Incoming Message 2.0'\").item.json.session_id }}?order=desc&limit=10",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "options": {},
@@ -955,7 +955,7 @@
           "values": [
             {
               "role": "system",
-              "content": "Tu objetivo es generar un resumen legible para el ser humano del contexto que obtienes de consultar la herramienta GET: Chat Histories, puedes usar emojis por ejemplo si quieres marcar un mensaje como IA 🤖 o si lo quieres marcar como mensaje de humano 👤 también puedes usar numeros si tienes que numerar interacciones.\n  Lo primero que me tienes que indicar es: ❌ Rechazado, motivo: .... (Siempre tienes que poner esto al inicio y siempre debe haber un motivo de rechazo, busca en la herramienta GET: Chat Histories )\nEvita poner textos como \"Aqui esta tu resumen\" etc, procura que sea como si me estuvieras platicando que paso en la interacción\n"
+              "content": "Tu objetivo es generar un resumen legible para el ser humano del contexto que obtienes del dataset de rechazo: herramienta GET: Chat Histories1 (chat-histories con order=desc y limit=10, últimas interacciones). Puedes usar emojis para marcar IA 🤖 y humano 👤, y numerar interacciones cuando aporte claridad.\nLo primero que me tienes que indicar es: ❌ Rechazado, motivo: .... (Siempre al inicio y con motivo de rechazo, usando el dataset de rechazo).\nEvita textos como 'Aquí está tu resumen'; redacta natural, como si me platicaras qué pasó."
             }
           ]
         },
@@ -2265,6 +2265,58 @@
       ],
       "id": "9e9df682-4d1e-4010-8e82-29e4a832dfd1",
       "name": "Call 'NewsFlows'"
+    },
+    {
+      "parameters": {
+        "content": "### Política Chat Histories\n- Rechazo/resumen rápido: `order=desc&limit=10` (últimas interacciones).\n- Contexto amplio: `order=asc&limit=100` o `200` para narrativa cronológica.\n- Usa `desc` para último contexto operativo.\n- Usa `asc` para reconstruir la historia completa en orden temporal.",
+        "height": 300,
+        "width": 620,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        -1500
+      ],
+      "id": "705fe414-9596-48b4-8dc0-89ae54ff2e7f",
+      "name": "Política Historial Chat"
+    },
+    {
+      "parameters": {
+        "url": "=https://crm.g210512.com/api/chat-histories/session/{{ $(\"Call 'Processing Incoming Message 2.0'\").item.json.session_id }}?order=asc&limit=200&page=1",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {},
+        "method": "GET"
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        1400,
+        -1240
+      ],
+      "id": "7dc364a5-57a9-43d8-a723-a3dfd903e821",
+      "name": "GET: Chat Histories (Wide Context)",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "rzmCtJN8Vtwv6AO3",
+          "name": "API Key Inmuebles"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Concatena páginas de chat-histories cuando el endpoint devuelve metadata de paginación\nconst rows = [];\nconst pages = [];\n\nfor (const item of $input.all()) {\n  const payload = item.json || {};\n  if (Array.isArray(payload.data)) rows.push(...payload.data);\n  else if (payload.message) rows.push(payload);\n\n  const meta = payload.meta || payload.metadata || payload.pagination || null;\n  if (meta) pages.push(meta);\n}\n\nrows.sort((a, b) => {\n  const at = new Date(a?.message?.created_at || a?.created_at || 0).getTime();\n  const bt = new Date(b?.message?.created_at || b?.created_at || 0).getTime();\n  return at - bt;\n});\n\nreturn [{\n  json: {\n    items: rows,\n    total_items: rows.length,\n    pages_detected: pages.length,\n    pagination_meta: pages\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1400,
+        -1080
+      ],
+      "id": "7703963f-4275-44bf-a093-057cdd2d886d",
+      "name": "Code: Concat Chat Pages"
     }
   ],
   "pinData": {
