@@ -508,7 +508,7 @@
       "parameters": {
         "url": "=https://crm.g210512.com/api/chat-histories/session/{{ $(\"Call 'Processing Incoming Message 2.0'\").item.json.session_id }}?order=desc&limit=10",
         "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "genericAuthType": "httpBearerAuth",
         "options": {},
         "method": "GET"
       },
@@ -521,7 +521,7 @@
       "id": "b619e354-9a01-4741-8c3d-e1a4a373769f",
       "name": "GET: Chat Histories1",
       "credentials": {
-        "httpHeaderAuth": {
+        "httpBearerAuth": {
           "id": "rzmCtJN8Vtwv6AO3",
           "name": "API Key Inmuebles"
         }
@@ -2286,7 +2286,7 @@
       "parameters": {
         "url": "=https://crm.g210512.com/api/chat-histories/session/{{ $(\"Call 'Processing Incoming Message 2.0'\").item.json.session_id }}?order=asc&limit=200&page=1",
         "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "genericAuthType": "httpBearerAuth",
         "options": {},
         "method": "GET"
       },
@@ -2299,7 +2299,7 @@
       "id": "7dc364a5-57a9-43d8-a723-a3dfd903e821",
       "name": "GET: Chat Histories (Wide Context)",
       "credentials": {
-        "httpHeaderAuth": {
+        "httpBearerAuth": {
           "id": "rzmCtJN8Vtwv6AO3",
           "name": "API Key Inmuebles"
         }
