@@ -98,7 +98,7 @@
     {
       "parameters": {
         "method": "PATCH",
-        "url": "=https://vg.g210512.com/api/bot-users/session/{{ $('Insert After API Creation').item.json.session_id }}",
+        "url": "=https://vg.g210512.com/api/bot-users/session/{{ $('When Executed by Another Workflow').item.json.session_id }}",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "options": {},
@@ -466,7 +466,7 @@
             },
             {
               "name": "nombre",
-              "value": "={{ $('Switch: Actual status').first().json.nombre }}"
+              "value": "={{ $('When Executed by Another Workflow').first().json.nombre }}"
             }
           ]
         },
