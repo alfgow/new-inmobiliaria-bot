@@ -40,56 +40,6 @@
                 },
                 "conditions": [
                   {
-                    "id": "9cfaa9c3-0424-4975-82bd-c50466befc1e",
-                    "leftValue": "={{ $json.status }}",
-                    "rightValue": "prospecting",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals",
-                      "name": "filter.operator.equals"
-                    }
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "🔍 Prospecting"
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 2
-                },
-                "conditions": [
-                  {
-                    "id": "5bd23d1a-fe75-4a15-80f6-6b92e25e747c",
-                    "leftValue": "={{ $json.status }}",
-                    "rightValue": "approved",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals",
-                      "name": "filter.operator.equals"
-                    }
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "✅ Approved"
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 2
-                },
-                "conditions": [
-                  {
                     "id": "4a73ed09-2a26-467c-92e4-9b4b64b6ae59",
                     "leftValue": "={{ $json.status }}",
                     "rightValue": "new",
@@ -2355,9 +2305,13 @@
   "connections": {
     "Switch: Actual status": {
       "main": [
-        [],
-        [],
-        [],
+        [
+          {
+            "node": "Switch: Questionnaire Status",
+            "type": "main",
+            "index": 0
+          }
+        ],
         [
           {
             "node": "Call 'NewsFlows'",
@@ -2365,8 +2319,20 @@
             "index": 0
           }
         ],
-        [],
-        []
+        [
+          {
+            "node": "Incrementar Contador y Bloquear",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "consultar_inmuebles1": {
