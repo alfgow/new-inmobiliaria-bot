@@ -3,12 +3,17 @@
   "nodes": [
     {
       "parameters": {
-        "operation": "executeQuery",
-        "query": "UPDATE bot_users\nSET status = 'rejected'\nWHERE session_id = '{{ $('When Executed by Another Workflow').first().json.session_id }}';",
-        "options": {}
+        "method": "PATCH",
+        "url": "=https://vg.g210512.com/api/bot-users/session/{{ $('When Executed by Another Workflow').first().json.session_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"status\":\"rejected\"}"
       },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
       "position": [
         1280,
         400
@@ -16,9 +21,9 @@
       "id": "5732fb2a-4874-4117-a7d6-2347ad60b722",
       "name": "Guardar Veto Postgress",
       "credentials": {
-        "postgres": {
-          "id": "qyR2OAIR7tUEVcQf",
-          "name": "Postgres-neon"
+        "httpHeaderAuth": {
+          "id": "rzmCtJN8Vtwv6AO3",
+          "name": "API Key Inmuebles"
         }
       }
     },
@@ -90,12 +95,17 @@
     },
     {
       "parameters": {
-        "operation": "executeQuery",
-        "query": "UPDATE bot_users\nSET status = 'blocked'\nWHERE session_id = '{{ $('Insert After API Creation').item.json.session_id }}'\nRETURNING api_contact_id;",
-        "options": {}
+        "method": "PATCH",
+        "url": "=https://vg.g210512.com/api/bot-users/session/{{ $('Insert After API Creation').item.json.session_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"status\":\"blocked\"}"
       },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
       "position": [
         1536,
         -256
@@ -103,9 +113,9 @@
       "id": "e81a00c5-c8ab-4649-afba-9b465f1de49d",
       "name": "SET: Blocked",
       "credentials": {
-        "postgres": {
-          "id": "qyR2OAIR7tUEVcQf",
-          "name": "Postgres-neon"
+        "httpHeaderAuth": {
+          "id": "rzmCtJN8Vtwv6AO3",
+          "name": "API Key Inmuebles"
         }
       }
     },
@@ -287,12 +297,17 @@
     },
     {
       "parameters": {
-        "operation": "executeQuery",
-        "query": "UPDATE bot_users\nSET status = 'prospecting'\nWHERE session_id = '{{ $('When Executed by Another Workflow').first().json.session_id }}';",
-        "options": {}
+        "method": "PATCH",
+        "url": "=https://vg.g210512.com/api/bot-users/session/{{ $('When Executed by Another Workflow').first().json.session_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"status\":\"prospecting\"}"
       },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
       "position": [
         1264,
         736
@@ -300,9 +315,9 @@
       "id": "ada98233-3004-4ffa-aa36-cd0fb51b20e3",
       "name": "SET prospecting status",
       "credentials": {
-        "postgres": {
-          "id": "qyR2OAIR7tUEVcQf",
-          "name": "Postgres-neon"
+        "httpHeaderAuth": {
+          "id": "rzmCtJN8Vtwv6AO3",
+          "name": "API Key Inmuebles"
         }
       }
     },
@@ -607,12 +622,17 @@
     },
     {
       "parameters": {
-        "operation": "executeQuery",
-        "query": "UPDATE bot_users SET bot_status = 'free' WHERE session_id = '{{ $('Query de Actualización Inteligente').item.json.session_id }}';",
-        "options": {}
+        "method": "PATCH",
+        "url": "=https://vg.g210512.com/api/bot-users/session/{{ $('Query de Actualización Inteligente').item.json.session_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"bot_status\":\"free\"}"
       },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
       "position": [
         2160,
         80
@@ -620,9 +640,9 @@
       "id": "962af4e6-e899-465c-887f-4515956a6731",
       "name": "SET: BOT FREE2",
       "credentials": {
-        "postgres": {
-          "id": "qyR2OAIR7tUEVcQf",
-          "name": "Postgres-neon"
+        "httpHeaderAuth": {
+          "id": "rzmCtJN8Vtwv6AO3",
+          "name": "API Key Inmuebles"
         }
       }
     },
@@ -1109,12 +1129,14 @@
     },
     {
       "parameters": {
-        "operation": "executeQuery",
-        "query": "SELECT * FROM bot_users WHERE session_id = '{{ $('When Executed by Another Workflow').first().json.session_id }}'",
+        "method": "GET",
+        "url": "=https://vg.g210512.com/api/bot-users/session/{{ $('When Executed by Another Workflow').first().json.session_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
         "options": {}
       },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
       "position": [
         80,
         336
@@ -1122,9 +1144,9 @@
       "id": "a7d477d2-c6c0-40a0-a84f-ea55b55e9c74",
       "name": "Execute a SQL query",
       "credentials": {
-        "postgres": {
-          "id": "qyR2OAIR7tUEVcQf",
-          "name": "Postgres-neon"
+        "httpHeaderAuth": {
+          "id": "rzmCtJN8Vtwv6AO3",
+          "name": "API Key Inmuebles"
         }
       }
     }

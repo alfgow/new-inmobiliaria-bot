@@ -28,12 +28,14 @@
     },
     {
       "parameters": {
-        "operation": "executeQuery",
-        "query": "SELECT * FROM bot_users WHERE session_id = '{{ $json.wa_id }}'",
+        "method": "GET",
+        "url": "=https://vg.g210512.com/api/bot-users/session/{{ $json.wa_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
         "options": {}
       },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
       "position": [
         560,
         -144
@@ -42,9 +44,9 @@
       "name": "GET: Contact Info",
       "alwaysOutputData": true,
       "credentials": {
-        "postgres": {
-          "id": "qyR2OAIR7tUEVcQf",
-          "name": "Postgres-neon"
+        "httpHeaderAuth": {
+          "id": "rzmCtJN8Vtwv6AO3",
+          "name": "API Key Inmuebles"
         }
       }
     },
@@ -185,12 +187,17 @@
     },
     {
       "parameters": {
-        "operation": "executeQuery",
-        "query": "INSERT INTO bot_users (session_id, status, api_contact_id, nombre, bot_status)\nVALUES (\n  '{{ $('When Executed by Another Workflow').item.json.wa_id }}',\n  'new',\n  {{ $json.data[0].id }},\n  '{{ $json.data[0].nombre }}',\n  'processing'\n)\nRETURNING *;",
-        "options": {}
+        "method": "POST",
+        "url": "=https://vg.g210512.com/api/bot-users/upsert",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"session_id\": \"{{ $('When Executed by Another Workflow').item.json.wa_id }}\",\n  \"status\": \"new\",\n  \"api_contact_id\": {{ $json.data[0].id }},\n  \"nombre\": \"{{ $json.data[0].nombre }}\",\n  \"bot_status\": \"processing\"\n}"
       },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
       "position": [
         816,
         112
@@ -199,20 +206,25 @@
       "name": "Create Postgress Contact",
       "alwaysOutputData": false,
       "credentials": {
-        "postgres": {
-          "id": "qyR2OAIR7tUEVcQf",
-          "name": "Postgres-neon"
+        "httpHeaderAuth": {
+          "id": "rzmCtJN8Vtwv6AO3",
+          "name": "API Key Inmuebles"
         }
       }
     },
     {
       "parameters": {
-        "operation": "executeQuery",
-        "query": "INSERT INTO bot_users (session_id, status, api_contact_id, nombre, telefono_real)\nVALUES ('{{ $('When Executed by Another Workflow').item.json.wa_id }}', 'new', {{ $json.data.id }}, '{{ $json.data.nombre }}', {{ $json.data.telefono }})\n  RETURNING *;",
-        "options": {}
+        "method": "POST",
+        "url": "=https://vg.g210512.com/api/bot-users/upsert",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"session_id\": \"{{ $('When Executed by Another Workflow').item.json.wa_id }}\",\n  \"status\": \"new\",\n  \"api_contact_id\": {{ $json.data.id }},\n  \"nombre\": \"{{ $json.data.nombre }}\",\n  \"telefono_real\": \"{{ $json.data.telefono }}\"\n}"
       },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
       "position": [
         592,
         368
@@ -220,20 +232,25 @@
       "id": "8dec871e-4595-4273-994d-e4d675ed715d",
       "name": "Insert After API Creation",
       "credentials": {
-        "postgres": {
-          "id": "qyR2OAIR7tUEVcQf",
-          "name": "Postgres-neon"
+        "httpHeaderAuth": {
+          "id": "rzmCtJN8Vtwv6AO3",
+          "name": "API Key Inmuebles"
         }
       }
     },
     {
       "parameters": {
-        "operation": "executeQuery",
-        "query": "UPDATE bot_users SET bot_status = 'processing' WHERE session_id = '{{ $('When Executed by Another Workflow').item.json.wa_id }}' RETURNING *;",
-        "options": {}
+        "method": "PATCH",
+        "url": "=https://vg.g210512.com/api/bot-users/session/{{ $('When Executed by Another Workflow').item.json.wa_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"bot_status\":\"processing\"}"
       },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
       "position": [
         1040,
         -128
@@ -242,9 +259,9 @@
       "name": "SET: Bot processing",
       "alwaysOutputData": true,
       "credentials": {
-        "postgres": {
-          "id": "qyR2OAIR7tUEVcQf",
-          "name": "Postgres-neon"
+        "httpHeaderAuth": {
+          "id": "rzmCtJN8Vtwv6AO3",
+          "name": "API Key Inmuebles"
         }
       },
       "onError": "continueRegularOutput"
