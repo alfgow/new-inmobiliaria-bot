@@ -61,7 +61,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// 1. Obtenemos los mensajes y los invertimos (orden cronológico)\nconst items = $input.all().reverse();\n\nlet reporte = \"🚨 REPORTE DE BLOQUEO - ÚLTIMAS INTERACCIONES 🚨\\n\\n\";\n\n// 2. Recorremos cada mensaje\nfor (const item of items) {\n  const msg = item.json.message;\n\n  // Identificamos al actor\n  let actor = \"Desconocido\";\n  if (msg.type === 'human') {\n    actor = \"Usuario\";\n  } else if (msg.type === 'ai') {\n    actor = \"Bot\";\n  }\n\n  // Extraemos el texto crudo\n  let texto = msg.content || (msg.data && msg.data.content) || \"Sin texto\";\n\n  // --- LIMPIEZA DE JSON (LA MAGIA NUEVA) ---\n  // Si es el Bot y parece que mandó un JSON, intentamos limpiarlo\n  if (actor === \"Bot\" && texto.includes(\"{\")) {\n    try {\n      const inicio = texto.indexOf('{');\n      const fin = texto.lastIndexOf('}') + 1;\n      \n      if (inicio !== -1 && fin !== -1) {\n        const jsonStr = texto.substring(inicio, fin);\n        const objeto = JSON.parse(jsonStr);\n        \n        // Si tiene el campo \"respuesta\", usamos eso en lugar del JSON feo\n        if (objeto.respuesta) {\n          texto = objeto.respuesta;\n        }\n      }\n    } catch (e) {\n      // Si falla el parseo, dejamos el texto original\n    }\n  }\n  // ----------------------------------------\n\n  // 3. Agregamos la línea limpia al reporte\n  reporte += `🔴 ${actor}: ${texto}\\n`;\n}\n\nreturn {\n  json: {\n    reporte_final: reporte\n  }\n};"
+        "jsCode": "// Normalizamos diferentes formatos de respuesta (lista directa o envuelta en data)\nconst rawItems = $input.all();\n\nconst normalizedMessages = rawItems.flatMap((item) => {\n  if (item?.json?.message) return [item.json];\n\n  if (Array.isArray(item?.json?.data)) {\n    return item.json.data.filter((entry) => entry && entry.message);\n  }\n\n  return [];\n});\n\n// Orden cronológico\nconst items = normalizedMessages.reverse();\n\nlet reporte = \"🚨 REPORTE DE BLOQUEO - ÚLTIMAS INTERACCIONES 🚨\\n\\n\";\n\nfor (const item of items) {\n  const msg = item.message || {};\n\n  let actor = \"Desconocido\";\n  if (msg.type === 'human') actor = \"Usuario\";\n  else if (msg.type === 'ai') actor = \"Bot\";\n\n  let texto = msg.content || (msg.data && msg.data.content) || \"Sin texto\";\n\n  if (actor === \"Bot\" && typeof texto === 'string' && texto.includes(\"{\")) {\n    try {\n      const inicio = texto.indexOf('{');\n      const fin = texto.lastIndexOf('}') + 1;\n\n      if (inicio !== -1 && fin !== -1) {\n        const jsonStr = texto.substring(inicio, fin);\n        const objeto = JSON.parse(jsonStr);\n\n        if (objeto.respuesta) texto = objeto.respuesta;\n      }\n    } catch (e) {\n      // Si falla el parseo, dejamos el texto original\n    }\n  }\n\n  reporte += `🔴 ${actor}: ${texto}\\n`;\n}\n\nreturn {\n  json: {\n    reporte_final: reporte\n  }\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -74,12 +74,14 @@
     },
     {
       "parameters": {
-        "operation": "executeQuery",
-        "query": "SELECT * \nFROM n8n_chat_histories \nWHERE session_id = '{{ $('When Executed by Another Workflow').first().json.session_id }}'\nORDER BY id DESC \nLIMIT 10;",
-        "options": {}
+        "url": "=https://crm.g210512.com/api/chat-histories/session/{{ $json.session_id }}?order=desc&limit=10",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {},
+        "method": "GET"
       },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
       "position": [
         1888,
         -256
@@ -87,9 +89,9 @@
       "id": "17c470ce-ea8e-42d4-bf7d-14333baaabcf",
       "name": "Get Story Chat",
       "credentials": {
-        "postgres": {
-          "id": "qyR2OAIR7tUEVcQf",
-          "name": "Postgres-neon"
+        "httpHeaderAuth": {
+          "id": "rzmCtJN8Vtwv6AO3",
+          "name": "API Key Inmuebles"
         }
       }
     },
@@ -428,12 +430,14 @@
     },
     {
       "parameters": {
-        "operation": "executeQuery",
-        "query": "SELECT * FROM n8n_chat_histories \nWHERE session_id = '{{ $('When Executed by Another Workflow').first().json.session_id }}'\nORDER BY id ASC;",
-        "options": {}
+        "url": "=https://crm.g210512.com/api/chat-histories/session/{{ $('When Executed by Another Workflow').first().json.session_id }}?order=asc&limit=200&page=1",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {},
+        "method": "GET"
       },
-      "type": "n8n-nodes-base.postgresTool",
-      "typeVersion": 2.6,
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
       "position": [
         1760,
         560
@@ -441,9 +445,9 @@
       "id": "cccfbfd2-83af-4498-91fc-2680ca3cbd45",
       "name": "GET: Chat Histories",
       "credentials": {
-        "postgres": {
-          "id": "qyR2OAIR7tUEVcQf",
-          "name": "Postgres-neon"
+        "httpHeaderAuth": {
+          "id": "rzmCtJN8Vtwv6AO3",
+          "name": "API Key Inmuebles"
         }
       }
     },
