@@ -172,30 +172,6 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $('Call \\'Processing Incoming Message 2.0\\'').item.json.session_id }}",
-        "text": "={{ $('AI Cleaner - Recepcionista').item.json.respuesta }}",
-        "additionalFields": {
-          "appendAttribution": false
-        }
-      },
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [
-        2480,
-        64
-      ],
-      "id": "32e17323-a568-4f80-b272-7e5b5a4a2fcd",
-      "name": "Response Message",
-      "webhookId": "054052f2-8130-4e99-87e8-d6b08f3bd3fe",
-      "credentials": {
-        "telegramApi": {
-          "id": "miuzXVpC7N3HQebh",
-          "name": "RAG BOT"
-        }
-      }
-    },
-    {
-      "parameters": {
         "rules": {
           "values": [
             {
@@ -350,30 +326,6 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $('Call \\'Processing Incoming Message 2.0\\'').item.json.session_id }}",
-        "text": "={{ $json.respuesta }}",
-        "additionalFields": {
-          "appendAttribution": false
-        }
-      },
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [
-        448,
-        -1984
-      ],
-      "id": "fc49d272-5805-471c-b2e1-f9ad4343d85e",
-      "name": "Reponder: Buscador",
-      "webhookId": "054052f2-8130-4e99-87e8-d6b08f3bd3fe",
-      "credentials": {
-        "telegramApi": {
-          "id": "miuzXVpC7N3HQebh",
-          "name": "RAG BOT"
-        }
-      }
-    },
-    {
-      "parameters": {
         "method": "PATCH",
         "url": "=https://vg.g210512.com/api/bot-users/session/{{ $(\"Call 'Processing Incoming Message 2.0'\").item.json.session_id }}",
         "authentication": "genericCredentialType",
@@ -395,30 +347,6 @@
         "httpHeaderAuth": {
           "id": "rzmCtJN8Vtwv6AO3",
           "name": "API Key Inmuebles"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "chatId": "={{ $json.session_id }}",
-        "text": "={{ $('AI Cleaner - Buscador').item.json.respuesta }}",
-        "additionalFields": {
-          "appendAttribution": false
-        }
-      },
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [
-        688,
-        -1792
-      ],
-      "id": "d7072971-72c0-4ade-b82a-c38c3e673469",
-      "name": "Reject Chat1",
-      "webhookId": "4879cb5d-acdf-480f-ac53-2e7e6b365fe5",
-      "credentials": {
-        "telegramApi": {
-          "id": "miuzXVpC7N3HQebh",
-          "name": "RAG BOT"
         }
       }
     },
@@ -808,30 +736,6 @@
         "openAiApi": {
           "id": "g8OPzRDvvB6YO7mf",
           "name": "OpenAi account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "chatId": "={{ $('Call \\'Processing Incoming Message 2.0\\'').item.json.session_id }}",
-        "text": "={{ $('AI Cleaner - Buscador').item.json.respuesta }}",
-        "additionalFields": {
-          "appendAttribution": false
-        }
-      },
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [
-        448,
-        -2176
-      ],
-      "id": "8241c30f-12fe-4a47-9e2c-f59079b71dc1",
-      "name": "Reponder: Questionaire",
-      "webhookId": "054052f2-8130-4e99-87e8-d6b08f3bd3fe",
-      "credentials": {
-        "telegramApi": {
-          "id": "miuzXVpC7N3HQebh",
-          "name": "RAG BOT"
         }
       }
     },
@@ -1723,28 +1627,6 @@
     },
     {
       "parameters": {
-        "resource": "media",
-        "operation": "mediaUrlGet",
-        "mediaGetId": "={{ $json.messages[0].audio.id }}"
-      },
-      "type": "n8n-nodes-base.whatsApp",
-      "typeVersion": 1.1,
-      "position": [
-        -5136,
-        -2448
-      ],
-      "id": "cef3e8ee-b51f-458d-b010-648bca987625",
-      "name": "Download media",
-      "webhookId": "71cceeae-178f-4849-9dfd-31be331ae2e5",
-      "credentials": {
-        "whatsAppApi": {
-          "id": "s0OzaeWmw3lzqhNG",
-          "name": "WhatsApp - testing v2"
-        }
-      }
-    },
-    {
-      "parameters": {
         "url": "={{ $json.url }}",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpBearerAuth",
@@ -2357,11 +2239,6 @@
         ]
       ]
     },
-    "Response Message": {
-      "main": [
-        []
-      ]
-    },
     "Switch": {
       "main": [
         [
@@ -2371,13 +2248,7 @@
             "index": 0
           }
         ],
-        [
-          {
-            "node": "Reponder: Buscador",
-            "type": "main",
-            "index": 0
-          }
-        ],
+        [],
         [
           {
             "node": "Guardar Veto Postgress1",
@@ -2401,24 +2272,7 @@
     },
     "Guardar Veto Postgress1": {
       "main": [
-        [
-          {
-            "node": "Reject Chat1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Reject Chat1": {
-      "main": [
-        [
-          {
-            "node": "AI: Generate Reject Message1",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "API: Add Comment": {
@@ -2560,28 +2414,6 @@
         ]
       ]
     },
-    "Reponder: Buscador": {
-      "main": [
-        [
-          {
-            "node": "SET: BOT FREE1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Reponder: Questionaire": {
-      "main": [
-        [
-          {
-            "node": "SET prospecting status1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "SET prospecting status1": {
       "main": [
         [
@@ -2595,13 +2427,7 @@
     },
     "API - Add Property Interest": {
       "main": [
-        [
-          {
-            "node": "Reponder: Questionaire",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "AI: Generate Reject Message1": {
@@ -2860,17 +2686,6 @@
         [
           {
             "node": "Switch Type Of Message",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Download media": {
-      "main": [
-        [
-          {
-            "node": "Get Audio",
             "type": "main",
             "index": 0
           }
